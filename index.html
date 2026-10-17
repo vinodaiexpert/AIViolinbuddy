@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Violin Living Book — Smart AI Violin Trainer (Books 1 & 2)</title>
+<title>Violin Living Book — AI Masterclass Studio (Books 1 & 2)</title>
 <style>
   :root {
     --bg: #14110f; --panel: #211c18; --border: #3a312a;
@@ -88,11 +88,12 @@
   .btn-rose { background: var(--rose); color: #fff; }
   .btn-dark { background: #292524; color: #fff; }
   .btn-outline { background: #fff; color: #292524; border: 1px solid #d6d3d1; }
+  .btn-outline.active { background: var(--amber-br); color: #14110f; border-color: #92400e; font-weight: 800; }
 
   .hw-box { background: #26211d; color: #fef3c7; padding: 9px 11px; border-radius: 8px; font-size: 11.5px; line-height: 1.35; }
   .hw-box strong { color: var(--amber-br); text-transform: uppercase; font-size: 10px; display: block; margin-bottom: 2px; }
 
-  /* RIGHT PAGE: AI TRAINER + SCORE + FINGERBOARD */
+  /* RIGHT PAGE: AI MASTERCLASS + SCORE + FINGERBOARD */
   .ex-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
   .ex-tab { background: #e7e5e4; color: #44403c; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; }
   .ex-tab.active { background: #92400e; color: #fff; }
@@ -103,16 +104,23 @@
 
   .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; background: #f5f2eb; border: 1px solid #e5dec9; padding: 6px 9px; border-radius: 8px; margin-bottom: 7px; }
 
-  /* AI TRAINER CONSOLE WITH LIVE OBSERVATION METER */
+  /* AI MASTERCLASS CONSOLE */
   .ai-trainer-box {
     background: #181411; color: #fff; border: 2px solid #443b34; border-left: 5px solid var(--amber-br);
     border-radius: 9px; padding: 9px 12px; margin-bottom: 8px; transition: 0.2s;
   }
-  .ai-trainer-box.correct { border-left-color: var(--emerald-br); background: #062c1e; }
-  .ai-trainer-box.wrong { border-left-color: var(--rose); background: #3b0a14; }
-  .ai-trainer-box.flat { border-left-color: var(--amber-br); background: #332008; }
-  .ai-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; flex-wrap: wrap; gap: 6px; }
-  .ai-speech { font-size: 12px; font-weight: 700; color: #fef3c7; line-height: 1.35; margin-bottom: 6px; }
+  .ai-trainer-box.briefing { border-left-color: #38bdf8; background: #0c2536; }
+  .ai-trainer-box.listening { border-left-color: var(--purple); background: #22113b; }
+  .ai-trainer-box.review-good { border-left-color: var(--emerald-br); background: #062c1e; }
+  .ai-trainer-box.review-fix { border-left-color: var(--amber-br); background: #332008; }
+  .ai-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px; }
+  .trainer-Controls { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+  .trainer-pill {
+    background: #2c2520; color: #d6d3d1; border: 1px solid #574c43;
+    padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; cursor: pointer;
+  }
+  .trainer-pill.active { background: var(--amber-br); color: #14110f; border-color: #fff; font-weight: 800; }
+  .ai-speech { font-size: 12px; font-weight: 600; color: #fef3c7; line-height: 1.4; margin-bottom: 7px; }
   .obs-bar-wrap {
     display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.35);
     padding: 5px 8px; border-radius: 6px; margin-bottom: 6px; font-size: 10.5px; font-family: monospace;
@@ -156,6 +164,7 @@
   .note-head { cursor: pointer; transition: 0.12s; }
   .note-on { fill: var(--amber) !important; stroke: var(--amber) !important; }
   .note-ok { fill: var(--emerald) !important; stroke: var(--emerald) !important; }
+  .note-flat { fill: #eab308 !important; stroke: #ca8a04 !important; }
   .note-err { fill: var(--rose) !important; stroke: var(--rose) !important; }
 </style>
 </head>
@@ -164,8 +173,8 @@
   <!-- TOP HEADER -->
   <header class="top-bar">
     <div class="brand">
-      <h1>🎻 Violin Living Book & AI Trainer <span class="status-pill">🟢 Smart Pitch Observer Active</span></h1>
-      <p>Anti-Echo Mic Lock · Steady Note Detector · Book 1 (Weeks 1–24) & Book 2 (Positions & 24 Scales)</p>
+      <h1>🎻 Violin Living Book & AI Masterclass <span class="status-pill">🟢 Brief → Play → Review Active</span></h1>
+      <p>Choose Male or Female AI Teacher · Full-Phrase Observation · Book 1 (W1–24) & Book 2 (Positions & 24 Scales)</p>
     </div>
     <div class="book-tabs">
       <button type="button" class="book-btn active" id="btn-book1" data-action="book" data-val="1">📘 BOOK 1: Foundations & Songs (W1–24)</button>
@@ -277,7 +286,7 @@
       </div>
     </section>
 
-    <!-- RIGHT PAGE: AI TRAINER + SHEET MUSIC + FINGERBOARD -->
+    <!-- RIGHT PAGE: AI MASTERCLASS + SHEET MUSIC + FINGERBOARD -->
     <section class="page-r">
       <div>
         <div class="page-hdr">
@@ -293,7 +302,7 @@
         </div>
 
         <h3 class="title-serif" style="font-size: 18.5px; margin-bottom: 2px;" id="ex-title">Exercise 1.1 · Pluck A and E</h3>
-        <p style="font-size: 11px; color: var(--muted); margin-bottom: 5px;" id="ex-desc">Turn on "🤖 AI Trainer Mode" to let the app listen to your violin note-by-note without echo!</p>
+        <p style="font-size: 11px; color: var(--muted); margin-bottom: 5px;" id="ex-desc">Click "🎓 Start AI Masterclass": your chosen teacher will brief you, listen silently while you play the full line, and review your notes at the end!</p>
 
         <!-- MP3 PLAY-ALONG BAR -->
         <div class="mp3-bar">
@@ -309,56 +318,62 @@
           <audio id="mp3-player" controls preload="none" src="audio/ex01_1.mp3" style="height: 26px; width: 195px;"></audio>
         </div>
 
-        <!-- PLAY-ALONG & AI TRAINER TOOLBAR -->
+        <!-- PLAY-ALONG & AI MASTERCLASS TOOLBAR -->
         <div class="toolbar">
+          <button type="button" class="btn btn-purple" id="ai-mode-btn" data-action="start-masterclass">
+            🎓 Start AI Masterclass (Brief → Play → Review)
+          </button>
           <button type="button" class="btn btn-emerald" id="play-btn" data-action="play-synth">
-            <span id="play-ico">▶</span> <span id="play-txt">Play & Move Cursor</span>
+            <span id="play-ico">▶</span> <span id="play-txt">Hear Reference Audio</span>
           </button>
-          <button type="button" class="btn btn-purple" id="ai-mode-btn" data-action="toggle-ai-trainer">
-            🤖 AI Trainer Mode: OFF
+          <button type="button" class="btn btn-amber" id="fix-btn" data-action="practice-mistakes" style="display: none;">
+            🔧 Practice Problem Notes Only
           </button>
-          <button type="button" class="btn btn-outline" id="voice-btn" data-action="toggle-voice">
-            🔊 AI Voice: ON
+          <button type="button" class="btn btn-outline" id="reset-notes-btn" data-action="restore-full" style="display: none;">
+            ↩ Full Exercise
           </button>
-          <button type="button" class="btn btn-outline" id="loop-btn" data-action="loop">🔁 Loop: ON</button>
           <span id="count-lbl" style="margin-left: auto; font-size: 11px; font-weight: 800; color: var(--amber); display: none;">Count: 1</span>
         </div>
 
-        <!-- SMART AI VIOLIN TRAINER CONSOLE (WITH LIVE OBSERVATION BAR) -->
+        <!-- AI MASTERCLASS CONSOLE (WITH MALE/FEMALE TRAINER & PACING SELECTOR) -->
         <div class="ai-trainer-box" id="ai-console">
           <div class="ai-hdr">
-            <span style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: var(--amber-br);" id="ai-target-lbl">
-              🎯 Target Note 1: Play A4 (Open A String)
-            </span>
-            <span style="font-size: 10.5px; font-family: monospace; background: rgba(255,255,255,0.1); padding: 2px 7px; border-radius: 4px;" id="ai-score-lbl">
-              Accuracy: 0 Correct · 0 Mistakes
+            <div class="trainer-Controls">
+              <span style="font-size: 10px; font-weight: 800; color: var(--amber-br); text-transform: uppercase;">Trainer:</span>
+              <button type="button" class="trainer-pill active" id="tr-female" data-action="set-gender" data-val="female">👩 Clara (Female)</button>
+              <button type="button" class="trainer-pill" id="tr-male" data-action="set-gender" data-val="male">👨 Maestro (Male)</button>
+              <span style="font-size: 10px; font-weight: 800; color: #a8a29e; margin-left: 4px;">Pacing:</span>
+              <button type="button" class="trainer-pill active" id="pace-self" data-action="set-pace" data-val="self" title="Cursor advances silently as you play each note, then reviews at the end">🎯 Self-Paced Flow</button>
+              <button type="button" class="trainer-pill" id="pace-tempo" data-action="set-pace" data-val="tempo" title="Cursor moves strictly with the metronome beat">⏱️ Tempo Beat Flow</button>
+            </div>
+            <span style="font-size: 10.5px; font-family: monospace; background: rgba(255,255,255,0.12); padding: 2px 7px; border-radius: 4px;" id="ai-score-lbl">
+              Stage: Standby
             </span>
           </div>
 
           <div class="ai-speech" id="ai-speech-txt">
-            👋 Click <strong>"🤖 AI Trainer Mode"</strong> above to start! The mic now automatically mutes while I speak so it never hears my voice, and waits for you to hold a steady violin note.
+            👋 Choose <strong>👩 Clara</strong> or <strong>👨 Maestro</strong> above, then click <strong>"🎓 Start AI Masterclass"</strong>! We will brief you on the exercise first, listen quietly while you play the whole line without interruption, and give you a full review at the end.
           </div>
 
-          <!-- LIVE OBSERVATION & HOLD STABILITY BAR -->
+          <!-- LIVE OBSERVATION & PROGRESS BAR -->
           <div class="obs-bar-wrap">
-            <span id="obs-heard-txt" style="width: 175px; color: #fcd34d;">👂 Hearing: Silence</span>
+            <span id="obs-heard-txt" style="width: 185px; color: #fcd34d;">👂 Mic: Ready</span>
             <div class="hold-track"><div class="hold-fill" id="obs-hold-bar"></div></div>
-            <span id="obs-hold-pct" style="width: 95px; text-align: right; color: #34d399;">Hold Note: 0%</span>
+            <span id="obs-hold-pct" style="width: 115px; text-align: right; color: #34d399;">Line Progress: 0%</span>
           </div>
 
           <div class="ai-sim-bar">
-            <span>Test AI Trainer Without Mic:</span>
-            <button type="button" class="btn btn-emerald" style="padding: 3px 8px; font-size: 10px;" data-action="sim-ai" data-val="correct">✅ Simulate Correct</button>
-            <button type="button" class="btn btn-rose" style="padding: 3px 8px; font-size: 10px;" data-action="sim-ai" data-val="wrong">❌ Simulate Wrong</button>
-            <button type="button" class="btn btn-amber" style="padding: 3px 8px; font-size: 10px;" data-action="sim-ai" data-val="flat">🔻 Simulate Flat</button>
-            <button type="button" class="btn btn-dark" style="padding: 3px 8px; font-size: 10px; margin-left: auto;" data-action="skip-note">Skip Note →</button>
+            <span>Simulate Full Student Run (No Mic Needed):</span>
+            <button type="button" class="btn btn-emerald" style="padding: 3px 8px; font-size: 10px;" data-action="sim-run" data-val="perfect">🌟 Simulate 100% Run</button>
+            <button type="button" class="btn btn-amber" style="padding: 3px 8px; font-size: 10px;" data-action="sim-run" data-val="mistakes">🔧 Simulate Run w/ 2 Mistakes</button>
+            <button type="button" class="btn btn-outline" style="padding: 2px 7px; font-size: 10px; margin-left: auto;" id="voice-btn" data-action="toggle-voice">🔊 Voice: ON</button>
           </div>
         </div>
 
         <!-- SVG SHEET MUSIC -->
         <div class="score-card">
           <div style="font-size: 10px; color: var(--muted); margin-bottom: 3px; display:flex; justify-content:space-between;">
-            <span>💡 Green = Passed · Red = Needs Fix · Orange = Current Target Note</span>
+            <span>💡 🟢 Green = In Tune · 🟡 Yellow = Flat/Sharp · 🔴 Red = Wrong Note</span>
             <span id="pos-lbl" style="font-weight:800; color:#5b21b6;">Position: 1st</span>
           </div>
           <svg id="sheet-svg" viewBox="0 0 700 150" style="width: 100%; height: auto; min-width: 480px;"></svg>
@@ -381,7 +396,7 @@
               <button type="button" class="pos-btn" id="fbp-4" data-action="pos" data-val="4">4th Pos</button>
               <button type="button" class="pos-btn" id="fbp-5" data-action="pos" data-val="5">5th Pos</button>
             </div>
-            <span id="pitch-badge" style="font-family: monospace; font-size: 10px; background: #29231e; padding: 2px 7px; border-radius: 4px; color: #fcd34d;">Click any finger below to play or test!</span>
+            <span id="pitch-badge" style="font-family: monospace; font-size: 10px; background: #29231e; padding: 2px 7px; border-radius: 4px; color: #fcd34d;">Click any finger below to play notes!</span>
           </div>
           <div class="fb-grid">
             <div class="fb-hdr" id="fb-hdr"></div>
@@ -434,6 +449,7 @@
           <input type="range" id="gate-rng" min="1" max="10" value="3" title="Increase if room is noisy" style="width: 55px; accent-color: var(--emerald-br);">
         </div>
         <div style="display: flex; gap: 3px; align-items: center;">
+          <span style="font-size: 9.5px; color: #a8a29e;">Drone:</span>
           <button type="button" class="drone-btn" id="dr-G3" data-action="drone" data-val="G3">G</button>
           <button type="button" class="drone-btn" id="dr-D4" data-action="drone" data-val="D4">D</button>
           <button type="button" class="drone-btn" id="dr-A4" data-action="drone" data-val="A4">A</button>
@@ -453,7 +469,7 @@
           <button type="button" class="btn btn-dark" data-action="timer-set" data-val="30">30s</button>
         </div>
       </div>
-      <div style="font-size: 9.5px; color: #a8a29e;">Mic auto-mutes while AI speaks so there is zero false echo!</div>
+      <div style="font-size: 9.5px; color: #a8a29e;">Briefs you first → Observes silently → Reviews at the end!</div>
     </div>
   </footer>
 
@@ -470,7 +486,6 @@ const FREQS = {
   "C6":1046.50, "C#6":1108.73, "D6":1174.66, "Eb6":1244.51, "E6":1318.51, "F6":1396.91, "F#6":1479.98
 };
 
-// Enharmonic lookup so Ab3 == G#3, Db4 == C#4, D#5 == Eb5, etc.
 const ENHARMONIC = {
   "Ab3":"G#3", "A#3":"Bb3", "Db4":"C#4", "D#4":"Eb4", "Gb4":"F#4", "Ab4":"G#4", "A#4":"Bb4",
   "Db5":"C#5", "D#5":"Eb5", "Gb5":"F#5", "Ab5":"G#5", "A#5":"Bb5", "Db6":"C#6", "D#6":"Eb6"
@@ -479,8 +494,8 @@ function normNote(n) { return ENHARMONIC[n] || n; }
 function getNoteFreq(n) { return FREQS[normNote(n)] || 440; }
 
 function isSamePitchClass(played, target) {
+  if (!played || !target) return false;
   const pFreq = getNoteFreq(played), tFreq = getNoteFreq(target);
-  // Check exact match OR octave harmonic match (violin overtones often peak at 2x freq)
   const ratio = pFreq / tFreq;
   return Math.abs(ratio - 1.0) < 0.035 || Math.abs(ratio - 2.0) < 0.04 || Math.abs(ratio - 0.5) < 0.03;
 }
@@ -617,7 +632,7 @@ B1_RAW.forEach(w => {
   const wk = w[0], pad = String(wk).padStart(2, "0");
   BOOK_DATA[1].push({
     tab: `W${wk}`, badge: `Book 1 · Week ${wk}`, pos: w[1], bpm: w[2], title: `Week ${wk}: ${w[3]}`, goal: w[4],
-    checks: [`Practise all 3 exercises for Week ${wk} at ♩ = ${w[2]}`, "Use AI Trainer Mode to verify intonation", "Play along with Slow 75% MP3, then Full 100%"],
+    checks: [`Practise all 3 exercises for Week ${wk} at ♩ = ${w[2]}`, "Run AI Masterclass (Brief → Play → Review)", "Play along with Slow 75% MP3, then Full 100%"],
     exercises: w[5].map((s, i) => {
       const [id, ttl, csv] = s.split("|");
       return { id: `Ex ${id}`, title: `Exercise ${id} · ${ttl}`, mp3: `audio/ex${pad}_${i+1}.mp3`, notes: csv.split(",") };
@@ -628,27 +643,32 @@ B1_RAW.forEach(w => {
 B2_RAW.forEach(w => {
   BOOK_DATA[2].push({
     tab: w[0], badge: `Book 2 · ${w[0]}`, pos: w[1], bpm: w[2], title: `Book 2 (${w[0]}): ${w[3]}`, goal: w[4],
-    checks: w[5].map(ex => `Practise ${ex[1]} (${ex[2]}) with AI Trainer & play-along`),
+    checks: w[5].map(ex => `Practise ${ex[1]} (${ex[2]}) with AI Masterclass & play-along`),
     exercises: w[5].map(ex => ({ id: ex[0], title: ex[1], mp3: ex[2], notes: ex[3].split(",") }))
   });
 });
 
 // ============================================================================
-// 3. STATE, AUDIO SYNTH & ANTI-ECHO AI VOICE ENGINE
+// 3. STATE, AUDIO SYNTH & MALE/FEMALE AI VOICE ENGINE
 // ============================================================================
 let curBook = 1, curIdx = 0, curEx = 0, curPos = 1;
 let bpm = 60, sig = 4, sub = 1, isLoop = true, isPlaying = false, playTimers = [];
 let isMetro = false, metroTimer = null, metroStep = 0;
+let fullExerciseNotes = ["A4","A4","E5","E5","A4"];
 let activeNotes = ["A4","A4","E5","E5","A4"];
 let audioCtx = null, droneOsc = null, activeDrone = null, mp3Rate = 1.0;
 
-// Smart AI Trainer & Anti-Echo Lock State
-let aiTrainerOn = false, voiceOn = true, aiStepIdx = 0, aiCorrectCount = 0, aiMistakeCount = 0;
-let micIgnoreUntil = 0;       // Timestamp until which mic is locked (prevents hearing AI speech/synth)
-let heldNoteName = null;      // Note currently being held by student
-let heldFrames = 0;           // Consecutive frames student has held the same note
-let lastWarnedNote = null;    // Prevents repeating "Wrong Note" for the same sustained bow stroke
-let lastWarnTime = 0;
+// Masterclass AI State
+let trainerGender = "female"; // 'female' (Clara) or 'male' (Maestro)
+let pacingMode = "self";      // 'self' (Self-Paced Flow) or 'tempo' (Tempo Beat Flow)
+let aiStage = "idle";         // 'idle' | 'briefing' | 'listening' | 'review'
+let voiceOn = true;
+let aiStepIdx = 0;
+let runResults = [];          // Stores { target, played, status: 'ok'|'flat'|'sharp'|'wrong', diffHz } for each note
+let problemNotesList = [];
+let micIgnoreUntil = 0;
+let heldNoteName = null, heldFrames = 0;
+let tempoStepSamples = [];    // Pitch samples collected during a beat in Tempo Flow mode
 
 function lockMicForMs(ms) {
   micIgnoreUntil = Math.max(micIgnoreUntil, performance.now() + ms);
@@ -671,10 +691,10 @@ function playClick(type = "down") {
   } catch(e){}
 }
 
-function playViolin(pitch, dur = 0.5) {
+function playViolin(pitch, dur = 0.45) {
   const freq = getNoteFreq(pitch);
   if (!freq) return;
-  lockMicForMs((dur * 1000) + 350); // Lock mic while synth note rings!
+  lockMicForMs((dur * 1000) + 300);
   try {
     const ctx = getCtx(), now = ctx.currentTime;
     const osc = ctx.createOscillator(), flt = ctx.createBiquadFilter(), g = ctx.createGain();
@@ -688,103 +708,277 @@ function playViolin(pitch, dur = 0.5) {
   } catch(e){}
 }
 
-function speakAI(text) {
-  document.getElementById("ai-speech-txt").innerHTML = text;
-  if (!voiceOn || !("speechSynthesis" in window)) return;
+// Pick best Male or Female SpeechSynthesis Voice
+let availableVoices = [];
+if ("speechSynthesis" in window) {
+  const loadVoices = () => { availableVoices = window.speechSynthesis.getVoices(); };
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function pickGenderVoice(gender) {
+  if (!availableVoices.length && "speechSynthesis" in window) {
+    availableVoices = window.speechSynthesis.getVoices();
+  }
+  const enVoices = availableVoices.filter(v => v.lang && v.lang.toLowerCase().startsWith("en"));
+  const pool = enVoices.length ? enVoices : availableVoices;
+  if (!pool.length) return null;
+
+  const femaleKeywords = ["female", "zira", "samantha", "victoria", "karen", "moira", "tessa", "aria", "jenny", "sonia", "susan", "hazel", "clara", "google uk english female", "google us english"];
+  const maleKeywords = ["male", "david", "mark", "daniel", "alex", "fred", "george", "guy", "ryan", "christopher", "eric", "google uk english male"];
+
+  const targets = gender === "female" ? femaleKeywords : maleKeywords;
+  for (const kw of targets) {
+    const found = pool.find(v => v.name.toLowerCase().includes(kw));
+    if (found) return found;
+  }
+  return pool[0];
+}
+
+function speakAI(htmlText, onDoneCallback = null) {
+  const prefix = trainerGender === "female" ? "👩 <strong>Clara:</strong> " : "👨 <strong>Maestro:</strong> ";
+  document.getElementById("ai-speech-txt").innerHTML = prefix + htmlText;
+
+  if (!voiceOn || !("speechSynthesis" in window)) {
+    if (onDoneCallback) setTimeout(onDoneCallback, 600);
+    return;
+  }
   try {
     window.speechSynthesis.cancel();
-    const cleanText = text.replace(/<[^>]*>/g, "").replace(/♯/g, " sharp ").replace(/♭/g, " flat ");
+    const cleanText = htmlText.replace(/<[^>]*>/g, "").replace(/♯/g, " sharp ").replace(/♭/g, " flat ").replace(/∏/g, "down bow").replace(/V/g, "up bow");
     const u = new SpeechSynthesisUtterance(cleanText);
-    u.rate = 1.06;
-    // Lock microphone while AI is speaking AND for 450ms after it finishes!
-    lockMicForMs(2600);
-    u.onstart = () => { lockMicForMs(3000); };
-    u.onend = () => { micIgnoreUntil = performance.now() + 450; };
-    u.onerror = () => { micIgnoreUntil = performance.now() + 200; };
+    const chosenVoice = pickGenderVoice(trainerGender);
+    if (chosenVoice) u.voice = chosenVoice;
+    u.pitch = trainerGender === "female" ? 1.12 : 0.88;
+    u.rate = 1.03;
+
+    lockMicForMs(3500);
+    u.onstart = () => { lockMicForMs(4000); };
+    u.onend = () => {
+      micIgnoreUntil = performance.now() + 450;
+      if (onDoneCallback) onDoneCallback();
+    };
+    u.onerror = () => {
+      micIgnoreUntil = performance.now() + 250;
+      if (onDoneCallback) onDoneCallback();
+    };
     window.speechSynthesis.speak(u);
-  } catch(e){}
+  } catch(e) {
+    if (onDoneCallback) setTimeout(onDoneCallback, 500);
+  }
 }
 
 // ============================================================================
-// 4. SMART AI EVALUATION ENGINE (OBSERVES STEADY NOTES, NO FALSE SPAM)
+// 4. 3-STAGE MASTERCLASS WORKFLOW (1. BRIEF -> 2. SILENT PLAY -> 3. REVIEW)
 // ============================================================================
-function updateAiTargetBanner() {
-  const targetPitch = activeNotes[aiStepIdx] || activeNotes[0];
-  const where = findNoteInstruction(targetPitch);
-  document.getElementById("ai-target-lbl").textContent = `🎯 Target Note ${aiStepIdx + 1} of ${activeNotes.length}: Play ${targetPitch} (${where})`;
-  document.getElementById("ai-score-lbl").textContent = `Accuracy: ${aiCorrectCount} Correct · ${aiMistakeCount} Mistakes`;
-}
+function startAiMasterclass() {
+  stopPlayAlong();
+  mp3Player.pause();
 
-function evaluateStudentNote(playedPitch, diffHz = 0, isManualSim = false) {
-  const targetPitch = activeNotes[aiStepIdx] || activeNotes[0];
-  const consoleBox = document.getElementById("ai-console");
-  const noteEl = document.getElementById(`nh-${aiStepIdx}`);
-  const whereTarget = findNoteInstruction(targetPitch);
-
-  // Check if student played the target note (or its enharmonic / harmonic equivalent)
-  const matched = isSamePitchClass(playedPitch, targetPitch);
-
-  if (!matched) {
-    const now = performance.now();
-    // Anti-spam: If we already warned about this exact wrong note recently, don't repeat!
-    if (!isManualSim && lastWarnedNote === playedPitch && (now - lastWarnTime < 4500)) {
-      return;
-    }
-    lastWarnedNote = playedPitch;
-    lastWarnTime = now;
-    aiMistakeCount++;
-    consoleBox.className = "ai-trainer-box wrong";
-    if (noteEl) { noteEl.classList.remove("note-on", "note-ok"); noteEl.classList.add("note-err"); }
-
-    updateAiTargetBanner();
-    speakAI(`👀 I heard <strong>${playedPitch}</strong>, but Target Note ${aiStepIdx + 1} is <strong>${targetPitch}</strong> (${whereTarget}). Try playing ${targetPitch}!`);
+  // If already running, stop it
+  if (aiStage === "briefing" || aiStage === "listening") {
+    aiStage = "idle";
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    document.getElementById("ai-mode-btn").textContent = "🎓 Start AI Masterclass (Brief → Play → Review)";
+    document.getElementById("ai-score-lbl").textContent = "Stage: Standby";
+    document.getElementById("ai-console").className = "ai-trainer-box";
     return;
   }
 
-  // Right note, check if noticeably flat or sharp (only when > 5.5 Hz off)
-  if (Math.abs(diffHz) > 5.5) {
-    const now = performance.now();
-    if (!isManualSim && (now - lastWarnTime < 3500)) return;
-    lastWarnTime = now;
-    consoleBox.className = "ai-trainer-box flat";
-    updateAiTargetBanner();
-    if (diffHz < 0) {
-      speakAI(`🔻 Close! You are on <strong>${targetPitch}</strong>, just slightly flat. Roll your finger a bit higher toward the bridge.`);
-    } else {
-      speakAI(`🔺 Close! You are on <strong>${targetPitch}</strong>, just slightly sharp. Roll your finger a bit back toward the scroll.`);
-    }
-    return;
-  }
+  // Ensure microphone is turned on for live listening
+  if (!micStream) toggleMic();
 
-  // Spot On! Correct Note!
-  lastWarnedNote = null;
+  // Reset visual note states
+  aiStepIdx = 0;
+  runResults = [];
   heldFrames = 0;
-  document.getElementById("obs-hold-bar").style.width = "100%";
-  aiCorrectCount++;
-  consoleBox.className = "ai-trainer-box correct";
-  if (noteEl) { noteEl.classList.remove("note-on", "note-err"); noteEl.classList.add("note-ok"); }
-  if (isManualSim) playViolin(targetPitch, 0.4);
+  drawStaff();
+  moveCursorToIdx(0, false);
 
-  if (aiStepIdx < activeNotes.length - 1) {
-    aiStepIdx++;
-    const nextPitch = activeNotes[aiStepIdx];
-    const nextWhere = findNoteInstruction(nextPitch);
-    moveCursorToIdx(aiStepIdx, false);
-    updateAiTargetBanner();
-    speakAI(`✅ <strong>Good ${targetPitch}!</strong> Now play Note ${aiStepIdx + 1}: <strong>${nextPitch}</strong> (${nextWhere}).`);
+  aiStage = "briefing";
+  document.getElementById("ai-mode-btn").textContent = "⏹ Stop Masterclass";
+  document.getElementById("ai-score-lbl").textContent = "Stage 1/3: Briefing...";
+  document.getElementById("ai-console").className = "ai-trainer-box briefing";
+  document.getElementById("obs-hold-bar").style.width = "0%";
+  document.getElementById("obs-hold-pct").textContent = "Line Progress: 0%";
+
+  const w = BOOK_DATA[curBook][curIdx];
+  const exTitle = document.getElementById("ex-title").textContent;
+  const posName = POS_DATA[curPos].name;
+  const firstNote = activeNotes[0];
+  const lastNote = activeNotes[activeNotes.length - 1];
+  const firstWhere = findNoteInstruction(firstNote);
+
+  const briefMsg = `Let's play <strong>${exTitle}</strong> in <strong>${posName}</strong>. Focus on: ${w.goal} Start on <strong>${firstNote}</strong> (${firstWhere}) and play all ${activeNotes.length} notes through to <strong>${lastNote}</strong>. I will listen quietly without interrupting and give you feedback at the end. Begin when ready!`;
+
+  speakAI(briefMsg, () => {
+    if (aiStage !== "briefing") return;
+    beginSilentObservationStage();
+  });
+}
+
+function beginSilentObservationStage() {
+  aiStage = "listening";
+  aiStepIdx = 0;
+  runResults = [];
+  heldFrames = 0;
+  document.getElementById("ai-console").className = "ai-trainer-box listening";
+  moveCursorToIdx(0, false);
+
+  if (pacingMode === "self") {
+    document.getElementById("ai-score-lbl").textContent = `Stage 2/3: Listening (Note 1/${activeNotes.length})`;
+    document.getElementById("ai-speech-txt").innerHTML = `🤫 <strong>Listening Silently (Self-Paced Flow):</strong> Play each note steadily on your violin (or tap the fingerboard below). The cursor will advance automatically without voice interruption until you finish all ${activeNotes.length} notes!`;
   } else {
-    aiStepIdx = 0;
-    moveCursorToIdx(0, false);
-    updateAiTargetBanner();
-    speakAI(`🎉 <strong>Awesome job!</strong> You finished the exercise with ${aiCorrectCount} correct notes! Ready for Note 1 again.`);
+    document.getElementById("ai-score-lbl").textContent = `Stage 2/3: Tempo Count-In (${bpm} BPM)`;
+    document.getElementById("ai-speech-txt").innerHTML = `🤫 <strong>Listening Silently (Tempo Beat Flow at ${bpm} BPM):</strong> Get your bow ready for the ${sig}-beat count-in, then play along with the moving cursor!`;
+    runTempoObservationLoop();
   }
 }
 
+function runTempoObservationLoop() {
+  const beatMs = (60 / bpm) * 1000;
+  const cnt = document.getElementById("count-lbl");
+  cnt.style.display = "inline-block";
+
+  for (let b = 0; b < sig; b++) {
+    playTimers.push(setTimeout(() => {
+      if (aiStage !== "listening") return;
+      playClick(b === 0 ? "down" : "beat");
+      cnt.textContent = `Count: ${b + 1}`;
+    }, b * beatMs));
+  }
+
+  let elapsed = sig * beatMs;
+  activeNotes.forEach((targetPt, idx) => {
+    // Start of beat: move cursor to note idx
+    playTimers.push(setTimeout(() => {
+      if (aiStage !== "listening") return;
+      cnt.style.display = "none";
+      aiStepIdx = idx;
+      tempoStepSamples = [];
+      playClick(idx % sig === 0 ? "down" : "beat");
+      moveCursorToIdx(idx, false);
+      document.getElementById("ai-score-lbl").textContent = `Stage 2/3: Observing Note ${idx + 1}/${activeNotes.length}`;
+    }, elapsed));
+
+    // End of beat: grade what was played during this beat silently
+    playTimers.push(setTimeout(() => {
+      if (aiStage !== "listening") return;
+      if (tempoStepSamples.length === 0) {
+        recordSilentNoteResult(idx, targetPt, "Silence", 0);
+      } else {
+        // Pick most frequent note heard during this beat
+        const sample = tempoStepSamples[Math.floor(tempoStepSamples.length / 2)];
+        recordSilentNoteResult(idx, targetPt, sample.note, sample.diff);
+      }
+    }, elapsed + beatMs - 40));
+
+    elapsed += beatMs;
+  });
+
+  playTimers.push(setTimeout(() => {
+    if (aiStage === "listening") finishAndDeliverReview();
+  }, elapsed + 80));
+}
+
+// Records a note silently during Stage 2 (Colors the note head, advances cursor, NO speech interruption!)
+function recordSilentNoteResult(idx, targetPt, playedPt, diffHz) {
+  const noteEl = document.getElementById(`nh-${idx}`);
+  let status = "ok";
+
+  if (playedPt === "Silence" || !isSamePitchClass(playedPt, targetPt)) {
+    status = "wrong";
+    if (noteEl) { noteEl.classList.remove("note-on", "note-ok", "note-flat"); noteEl.classList.add("note-err"); }
+  } else if (Math.abs(diffHz) > 5.8) {
+    status = diffHz < 0 ? "flat" : "sharp";
+    if (noteEl) { noteEl.classList.remove("note-on", "note-ok", "note-err"); noteEl.classList.add("note-flat"); }
+  } else {
+    status = "ok";
+    if (noteEl) { noteEl.classList.remove("note-on", "note-err", "note-flat"); noteEl.classList.add("note-ok"); }
+  }
+
+  runResults[idx] = { idx: idx + 1, target: targetPt, played: playedPt, status, diffHz };
+
+  const pct = Math.round(((idx + 1) / activeNotes.length) * 100);
+  document.getElementById("obs-hold-bar").style.width = `${pct}%`;
+  document.getElementById("obs-hold-pct").textContent = `Line Progress: ${pct}%`;
+
+  // In Self-Paced mode, advance immediately to the next note or finish at the end of the line
+  if (pacingMode === "self") {
+    if (idx < activeNotes.length - 1) {
+      aiStepIdx = idx + 1;
+      moveCursorToIdx(aiStepIdx, false);
+      document.getElementById("ai-score-lbl").textContent = `Stage 2/3: Listening (Note ${aiStepIdx + 1}/${activeNotes.length})`;
+    } else {
+      finishAndDeliverReview();
+    }
+  }
+}
+
+// Stage 3: End-of-Line Comprehensive AI Teacher Review!
+function finishAndDeliverReview() {
+  aiStage = "review";
+  document.getElementById("ai-mode-btn").textContent = "🎓 Start AI Masterclass Again";
+
+  const total = activeNotes.length;
+  const okNotes = runResults.filter(r => r && r.status === "ok");
+  const flatSharpNotes = runResults.filter(r => r && (r.status === "flat" || r.status === "sharp"));
+  const wrongNotes = runResults.filter(r => r && r.status === "wrong");
+
+  const scorePct = Math.round(((okNotes.length + flatSharpNotes.length * 0.5) / Math.max(1, total)) * 100);
+  document.getElementById("ai-score-lbl").textContent = `Stage 3/3 Review · Score: ${scorePct}%`;
+
+  // Collect problem notes for the 1-click "Practice Problem Notes Only" button
+  problemNotesList = [];
+  runResults.forEach(r => {
+    if (r && r.status !== "ok") problemNotesList.push(r.target);
+  });
+
+  const fixBtn = document.getElementById("fix-btn");
+  if (problemNotesList.length > 0) {
+    fixBtn.style.display = "inline-flex";
+    fixBtn.textContent = `🔧 Practice ${problemNotesList.length} Problem Note${problemNotesList.length > 1 ? 's' : ''} Only`;
+  } else {
+    fixBtn.style.display = "none";
+  }
+
+  if (wrongNotes.length === 0 && flatSharpNotes.length === 0) {
+    document.getElementById("ai-console").className = "ai-trainer-box review-good";
+    speakAI(`🌟 <strong>Bravo! 100% Accuracy!</strong> All ${total} notes were spot on and in tune. Your hand frame in ${POS_DATA[curPos].name} was rock solid. Try stepping the tempo up by 5 BPM or move to the next exercise!`);
+    return;
+  }
+
+  document.getElementById("ai-console").className = "ai-trainer-box review-fix";
+  let feedbackParts = [`Good run! You scored <strong>${scorePct}%</strong> (${okNotes.length} of ${total} notes clean).`];
+
+  if (wrongNotes.length > 0) {
+    const firstErr = wrongNotes[0];
+    const where = findNoteInstruction(firstErr.target);
+    if (firstErr.played === "Silence") {
+      feedbackParts.push(`On <strong>Note ${firstErr.idx} (${firstErr.target})</strong>, I didn't hear a clear note—make sure to place ${where}.`);
+    } else {
+      feedbackParts.push(`Watch out for <strong>Note ${firstErr.idx}</strong>: you played <strong>${firstErr.played}</strong> instead of <strong>${firstErr.target}</strong> (${where}).`);
+    }
+    if (wrongNotes.length > 1) {
+      const others = wrongNotes.slice(1, 3).map(x => `Note ${x.idx} (${x.target})`).join(" and ");
+      feedbackParts.push(`Also check ${others}.`);
+    }
+  }
+
+  if (flatSharpNotes.length > 0) {
+    const fs = flatSharpNotes[0];
+    const dir = fs.status === "flat" ? "slightly flat—slide your finger a tiny bit higher toward the bridge" : "slightly sharp—roll your finger slightly back toward the scroll";
+    feedbackParts.push(`For intonation, <strong>Note ${fs.idx} (${fs.target})</strong> was ${dir}.`);
+  }
+
+  feedbackParts.push(`Click <strong>"🔧 Practice Problem Notes Only"</strong> above to isolate those spots, or start the Masterclass again!`);
+  speakAI(feedbackParts.join(" "));
+}
+
 // ============================================================================
-// 5. STUDIO-GRADE VIOLIN PITCH DETECTOR (NSDF VALLEY + PARABOLIC PEAK)
+// 5. STUDIO-GRADE VIOLIN PITCH DETECTOR (NSDF)
 // ============================================================================
 function detectViolinPitchNSDF(buf, sampleRate) {
-  // 1. Calculate RMS volume
   let rms = 0;
   for (let i = 0; i < buf.length; i++) rms += buf[i] * buf[i];
   rms = Math.sqrt(rms / buf.length);
@@ -792,7 +986,6 @@ function detectViolinPitchNSDF(buf, sampleRate) {
   const gateLevel = parseInt(document.getElementById("gate-rng").value, 10) * 0.005;
   if (rms < gateLevel) return { freq: -1, rms };
 
-  // 2. Search lag range for Violin (185 Hz to 1550 Hz)
   const minLag = Math.floor(sampleRate / 1550);
   const maxLag = Math.min(buf.length >> 1, Math.ceil(sampleRate / 185));
 
@@ -806,26 +999,23 @@ function detectViolinPitchNSDF(buf, sampleRate) {
     nsdf[tau] = m > 0 ? (2 * acf) / m : 0;
   }
 
-  // 3. Find first zero-crossing into positive peak after initial drop
   let tau = minLag;
   while (tau < maxLag && nsdf[tau] > 0) tau++;
   while (tau < maxLag && nsdf[tau] <= 0) tau++;
   if (tau >= maxLag) return { freq: -1, rms };
 
-  // 4. Find the highest clear harmonic peak (above 0.65 clarity threshold)
   let bestTau = -1, maxVal = 0;
   for (let t = tau; t < maxLag - 1; t++) {
     if (nsdf[t] > nsdf[t - 1] && nsdf[t] >= nsdf[t + 1] && nsdf[t] > 0.62) {
       if (nsdf[t] > maxVal) {
         maxVal = nsdf[t];
         bestTau = t;
-        if (nsdf[t] > 0.82) break; // First strong fundamental peak!
+        if (nsdf[t] > 0.82) break;
       }
     }
   }
   if (bestTau === -1) return { freq: -1, rms };
 
-  // 5. Parabolic interpolation for sub-Hz accuracy
   const y1 = nsdf[bestTau - 1], y2 = nsdf[bestTau], y3 = nsdf[bestTau + 1];
   const denom = y1 + y3 - 2 * y2;
   const delta = denom !== 0 ? (y1 - y3) / (2 * denom) : 0;
@@ -885,18 +1075,23 @@ function updChecks() {
 
 function loadEx(eIdx) {
   stopPlayAlong();
+  aiStage = "idle";
+  document.getElementById("ai-mode-btn").textContent = "🎓 Start AI Masterclass (Brief → Play → Review)";
+  document.getElementById("fix-btn").style.display = "none";
+  document.getElementById("reset-notes-btn").style.display = "none";
   const w = BOOK_DATA[curBook][curIdx];
   curEx = Math.max(0, Math.min(w.exercises.length - 1, eIdx));
   document.querySelectorAll("#ex-tabs .ex-tab").forEach((b, i) => b.classList.toggle("active", i === curEx));
   const ex = w.exercises[curEx];
+  fullExerciseNotes = ex.notes.slice();
   activeNotes = ex.notes.slice();
-  aiStepIdx = 0; aiCorrectCount = 0; aiMistakeCount = 0; lastWarnedNote = null;
+  aiStepIdx = 0; runResults = [];
   document.getElementById("ai-console").className = "ai-trainer-box";
+  document.getElementById("ai-score-lbl").textContent = "Stage: Standby";
   document.getElementById("ex-title").textContent = ex.title;
   setMp3Track(ex.mp3);
   drawStaff();
   moveCursorToIdx(0, false);
-  updateAiTargetBanner();
 }
 
 function setMp3Track(path) {
@@ -931,7 +1126,7 @@ function setPos(p) {
 }
 
 function highlightNote(pitch, playSound = true) {
-  if (playSound) playViolin(pitch, 0.5);
+  if (playSound) playViolin(pitch, 0.45);
   document.querySelectorAll(".fb-cell").forEach(c => c.classList.remove("active"));
   const target = document.getElementById(`cell-${normNote(pitch)}`);
   if (target) target.classList.add("active");
@@ -977,7 +1172,9 @@ function moveCursorToIdx(idx, playSynth = true) {
   if (!pt) return;
   document.querySelectorAll(".note-head").forEach(el => el.classList.remove("note-on"));
   const el = document.getElementById(`nh-${idx}`);
-  if (el) el.classList.add("note-on");
+  if (el && !el.classList.contains("note-ok") && !el.classList.contains("note-err") && !el.classList.contains("note-flat")) {
+    el.classList.add("note-on");
+  }
 
   const startX = 90, stepX = 575 / Math.max(1, activeNotes.length);
   const cur = document.getElementById("cursor-bar");
@@ -998,7 +1195,7 @@ mp3Player.addEventListener("timeupdate", () => {
 });
 
 // ============================================================================
-// 8. PLAY-ALONG SEQUENCER & METRONOME
+// 8. REFERENCE AUDIO PLAY-ALONG & METRONOME
 // ============================================================================
 function togglePlayAlong() { isPlaying ? stopPlayAlong() : startPlayAlong(); }
 
@@ -1006,7 +1203,7 @@ function stopPlayAlong() {
   isPlaying = false;
   playTimers.forEach(t => clearTimeout(t)); playTimers = [];
   document.getElementById("play-ico").textContent = "▶";
-  document.getElementById("play-txt").textContent = "Play & Move Cursor";
+  document.getElementById("play-txt").textContent = "Hear Reference Audio";
   document.getElementById("count-lbl").style.display = "none";
 }
 
@@ -1015,7 +1212,7 @@ function startPlayAlong() {
   mp3Player.pause();
   isPlaying = true;
   document.getElementById("play-ico").textContent = "⏹";
-  document.getElementById("play-txt").textContent = "Stop Cursor";
+  document.getElementById("play-txt").textContent = "Stop Audio";
   const beatMs = (60 / bpm) * 1000;
   const cnt = document.getElementById("count-lbl");
   cnt.style.display = "inline-block";
@@ -1064,7 +1261,7 @@ function runMetro() {
 }
 
 // ============================================================================
-// 9. SCALES, PIECES & ANTI-ECHO MICROPHONE LISTENER
+// 9. SCALES, PIECES & MICROPHONE LISTENER
 // ============================================================================
 const SCALE_NOTES = {
   "C": ["C4","D4","E4","F4","G4","A4","B4","C5","D5","E5","F5","G5","A5","B5","C6"],
@@ -1088,11 +1285,12 @@ document.getElementById("scale-picker").addEventListener("change", function() {
   stopPlayAlong();
   const [root, type, posStr, mp3Base] = this.value.split("|");
   setPos(parseInt(posStr, 10)); setBpm(80);
-  activeNotes = (SCALE_NOTES[root] || SCALE_NOTES["C"]).slice();
-  aiStepIdx = 0; lastWarnedNote = null;
+  fullExerciseNotes = (SCALE_NOTES[root] || SCALE_NOTES["C"]).slice();
+  activeNotes = fullExerciseNotes.slice();
+  aiStepIdx = 0; aiStage = "idle";
   document.getElementById("ex-title").textContent = `${root} ${type === 'maj' ? 'Major' : 'Minor'} Scale (Two Octaves)`;
   setMp3Track(`audio2/${mp3Base}${type === 'maj' ? '_scale.mp3' : '_harmonic.mp3'}`);
-  drawStaff(); moveCursorToIdx(0, true); updateAiTargetBanner();
+  drawStaff(); moveCursorToIdx(0, true);
 });
 
 document.getElementById("piece-picker").addEventListener("change", function() {
@@ -1100,11 +1298,12 @@ document.getElementById("piece-picker").addEventListener("change", function() {
   stopPlayAlong();
   const [ttl, posStr, bpmStr, mp3Path, csv] = this.value.split("|");
   setPos(parseInt(posStr, 10)); setBpm(parseInt(bpmStr, 10));
-  activeNotes = csv.split(",");
-  aiStepIdx = 0; lastWarnedNote = null;
+  fullExerciseNotes = csv.split(",");
+  activeNotes = fullExerciseNotes.slice();
+  aiStepIdx = 0; aiStage = "idle";
   document.getElementById("ex-title").textContent = ttl;
   setMp3Track(mp3Path);
-  drawStaff(); moveCursorToIdx(0, true); updateAiTargetBanner();
+  drawStaff(); moveCursorToIdx(0, true);
 });
 
 document.getElementById("sig-sel").addEventListener("change", function() {
@@ -1125,12 +1324,12 @@ function fmtT(s) { return `${String(Math.floor(s/60)).padStart(2,"0")}:${String(
 let micStream = null, micInt = null;
 async function toggleMic() {
   const btn = document.getElementById("mic-btn"), txt = document.getElementById("tuner-txt"), ndl = document.getElementById("tuner-ndl");
-  const heardEl = document.getElementById("obs-heard-txt"), holdBar = document.getElementById("obs-hold-bar"), holdPct = document.getElementById("obs-hold-pct");
+  const heardEl = document.getElementById("obs-heard-txt");
 
   if (micStream) {
     micStream.getTracks().forEach(t => t.stop()); micStream = null; clearInterval(micInt);
     btn.textContent = "🎙️ Mic Tuner"; txt.textContent = "Standby"; ndl.style.left = "50%";
-    heardEl.textContent = "👂 Hearing: Mic Off"; holdBar.style.width = "0%"; return;
+    heardEl.textContent = "👂 Mic: Off"; return;
   }
   try {
     const ctx = getCtx();
@@ -1143,27 +1342,21 @@ async function toggleMic() {
     const buf = new Float32Array(an.fftSize);
 
     micInt = setInterval(() => {
-      // 1. If AI is speaking or synth is ringing, ignore mic completely!
       if (performance.now() < micIgnoreUntil || ("speechSynthesis" in window && window.speechSynthesis.speaking)) {
         heardEl.textContent = "🔇 Mic Paused (AI Speaking)";
-        heldFrames = 0; holdBar.style.width = "0%";
+        heldFrames = 0;
         return;
       }
 
       an.getFloatTimeDomainData(buf);
       const res = detectViolinPitchNSDF(buf, ctx.sampleRate);
 
-      // 2. If silence / below noise gate, reset stability counter
       if (res.freq === -1) {
-        heardEl.textContent = "👂 Waiting for violin note...";
+        heardEl.textContent = aiStage === "listening" ? `👂 Play Note ${aiStepIdx + 1} (${activeNotes[aiStepIdx]})...` : "👂 Waiting for violin...";
         heldFrames = Math.max(0, heldFrames - 1);
-        holdBar.style.width = `${Math.min(100, heldFrames * 25)}%`;
-        holdPct.textContent = `Hold Note: ${Math.min(100, heldFrames * 25)}%`;
-        if (heldFrames === 0) lastWarnedNote = null; // Reset warning lock after silence
         return;
       }
 
-      // 3. Find closest violin note
       let best = "A4", bf = 440, md = 9999;
       for (const [k, f] of Object.entries(FREQS)) {
         if (Math.abs(res.freq - f) < md) { md = Math.abs(res.freq - f); best = k; bf = f; }
@@ -1173,25 +1366,22 @@ async function toggleMic() {
       txt.textContent = `${best} (${Math.round(res.freq)} Hz) ${Math.abs(diff) < 3.5 ? '🟢' : diff < 0 ? '🔻Flat' : '🔺Sharp'}`;
       heardEl.textContent = `👂 Heard: ${best} (${Math.round(res.freq)} Hz)`;
 
-      // 4. Require student to hold the same note steadily before AI grades it!
-      const targetPt = activeNotes[aiStepIdx] || activeNotes[0];
-      if (best === heldNoteName) {
-        heldFrames++;
-      } else {
-        heldNoteName = best;
-        heldFrames = 1;
-      }
+      if (aiStage === "listening") {
+        if (pacingMode === "tempo") {
+          tempoStepSamples.push({ note: best, diff });
+        } else {
+          // Self-Paced Flow: require 3 steady frames (~360ms) on a note, then record silently & move cursor!
+          if (best === heldNoteName) heldFrames++;
+          else { heldNoteName = best; heldFrames = 1; }
 
-      // Target note needs 3 steady frames (~360ms); wrong note needs 5 steady frames (~600ms) so transient bow noise never triggers false alarms!
-      const matchedTarget = isSamePitchClass(best, targetPt);
-      const requiredFrames = matchedTarget ? 3 : 5;
-      const pct = Math.min(100, Math.round((heldFrames / requiredFrames) * 100));
-      holdBar.style.width = `${pct}%`;
-      holdPct.textContent = `Hold Note: ${pct}%`;
-
-      if (aiTrainerOn && heldFrames >= requiredFrames) {
-        heldFrames = 0;
-        evaluateStudentNote(best, matchedTarget ? diff : 0, false);
+          const targetPt = activeNotes[aiStepIdx];
+          const needed = isSamePitchClass(best, targetPt) ? 3 : 4;
+          if (heldFrames >= needed) {
+            heldFrames = 0;
+            lockMicForMs(320); // Brief pause so bow change doesn't double-trigger next note
+            recordSilentNoteResult(aiStepIdx, targetPt, best, diff);
+          }
+        }
       }
     }, 120);
   } catch (e) { txt.textContent = "Allow Mic"; }
@@ -1215,48 +1405,66 @@ document.addEventListener("click", function(e) {
   else if (act === "step-week") selectWeek(curIdx + parseInt(val, 10));
   else if (act === "ex") loadEx(parseInt(val, 10));
   else if (act === "pos") setPos(parseInt(val, 10));
+  else if (act === "set-gender") {
+    trainerGender = val;
+    document.getElementById("tr-female").classList.toggle("active", val === "female");
+    document.getElementById("tr-male").classList.toggle("active", val === "male");
+    speakAI(val === "female"
+      ? "Hello! I'm Clara, your violin coach. Click Start AI Masterclass whenever you're ready to play!"
+      : "Greetings! I am Maestro, your violin instructor. Click Start AI Masterclass and let's hear your tone!");
+  }
+  else if (act === "set-pace") {
+    pacingMode = val;
+    document.getElementById("pace-self").classList.toggle("active", val === "self");
+    document.getElementById("pace-tempo").classList.toggle("active", val === "tempo");
+  }
+  else if (act === "start-masterclass") startAiMasterclass();
   else if (act === "note") {
-    if (aiTrainerOn) evaluateStudentNote(val, 0, true);
-    else highlightNote(val, true);
+    playViolin(val, 0.4);
+    if (aiStage === "listening" && pacingMode === "self") {
+      recordSilentNoteResult(aiStepIdx, activeNotes[aiStepIdx], val, 0);
+    } else {
+      highlightNote(val, false);
+    }
   }
   else if (act === "staff-note") {
     aiStepIdx = parseInt(val, 10);
     moveCursorToIdx(aiStepIdx, true);
-    updateAiTargetBanner();
   }
-  else if (act === "skip-note") {
-    aiStepIdx = (aiStepIdx + 1) % activeNotes.length;
-    moveCursorToIdx(aiStepIdx, true);
-    updateAiTargetBanner();
+  else if (act === "sim-run") {
+    stopPlayAlong();
+    aiStage = "listening";
+    pacingMode = "self";
+    drawStaff();
+    activeNotes.forEach((pt, idx) => {
+      if (val === "perfect") {
+        recordSilentNoteResult(idx, pt, pt, 0);
+      } else {
+        if (idx === 1) recordSilentNoteResult(idx, pt, pt === "A4" ? "B4" : "A4", 0);
+        else if (idx === 3) recordSilentNoteResult(idx, pt, pt, -7.5);
+        else recordSilentNoteResult(idx, pt, pt, 0);
+      }
+    });
+  }
+  else if (act === "practice-mistakes") {
+    if (problemNotesList.length > 0) {
+      activeNotes = problemNotesList.slice();
+      document.getElementById("reset-notes-btn").style.display = "inline-flex";
+      document.getElementById("fix-btn").style.display = "none";
+      drawStaff();
+      startAiMasterclass();
+    }
+  }
+  else if (act === "restore-full") {
+    activeNotes = fullExerciseNotes.slice();
+    document.getElementById("reset-notes-btn").style.display = "none";
+    drawStaff();
+    moveCursorToIdx(0, false);
   }
   else if (act === "play-synth") togglePlayAlong();
-  else if (act === "toggle-ai-trainer") {
-    stopPlayAlong();
-    aiTrainerOn = !aiTrainerOn;
-    btn.textContent = `🤖 AI Trainer Mode: ${aiTrainerOn ? 'ON' : 'OFF'}`;
-    if (aiTrainerOn) {
-      aiStepIdx = 0; heldFrames = 0; lastWarnedNote = null;
-      moveCursorToIdx(0, false);
-      updateAiTargetBanner();
-      const firstPt = activeNotes[0];
-      speakAI(`AI Trainer Mode ready! Play and hold Note 1: <strong>${firstPt}</strong> (${findNoteInstruction(firstPt)}).`);
-      if (!micStream) toggleMic();
-    } else {
-      speakAI("AI Trainer Mode paused.");
-    }
-  }
   else if (act === "toggle-voice") {
     voiceOn = !voiceOn;
-    btn.textContent = `🔊 AI Voice: ${voiceOn ? 'ON' : 'OFF'}`;
-  }
-  else if (act === "sim-ai") {
-    const targetPt = activeNotes[aiStepIdx] || activeNotes[0];
-    if (val === "correct") evaluateStudentNote(targetPt, 0, true);
-    else if (val === "flat") evaluateStudentNote(targetPt, -7.0, true);
-    else {
-      const wrongPt = normNote(targetPt) === "A4" ? "B4" : "A4";
-      evaluateStudentNote(wrongPt, 0, true);
-    }
+    btn.textContent = `🔊 Voice: ${voiceOn ? 'ON' : 'OFF'}`;
   }
   else if (act === "loop") { isLoop = !isLoop; btn.textContent = `🔁 Loop: ${isLoop ? 'ON' : 'OFF'}`; }
   else if (act === "rate") {
