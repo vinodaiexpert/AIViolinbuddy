@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Violin Living Book — AI Masterclass Studio (Books 1 & 2)</title>
+<title>The Living Violin Book — Master Studio & AI Masterclass</title>
 <style>
   :root {
     --bg: #14110f; --panel: #211c18; --border: #3a312a;
@@ -15,153 +15,146 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: var(--bg); color: var(--text); min-height: 100vh;
-    display: flex; flex-direction: column; padding: 8px; user-select: none;
+    background: var(--bg); color: var(--text); height: 100vh; overflow: hidden;
+    display: flex; flex-direction: column; padding: 6px; user-select: none;
   }
 
   /* TOP HEADER */
   .top-bar {
-    max-width: 1400px; width: 100%; margin: 0 auto; background: var(--panel); color: #fff;
-    border: 1px solid var(--border); border-radius: 10px 10px 0 0; padding: 10px 16px;
-    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+    max-width: 1420px; width: 100%; margin: 0 auto; background: var(--panel); color: #fff;
+    border: 1px solid var(--border); border-radius: 8px 8px 0 0; padding: 6px 12px;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px;
   }
-  .brand h1 { font-size: 17px; color: var(--amber-br); font-weight: 800; display: flex; align-items: center; gap: 8px; }
-  .status-pill { font-size: 10px; background: #064e3b; color: #34d399; padding: 2px 8px; border-radius: 99px; border: 1px solid #059669; }
-  .brand p { font-size: 11px; color: #a8a29e; margin-top: 2px; }
+  .brand h1 { font-size: 15px; color: var(--amber-br); font-weight: 800; display: flex; align-items: center; gap: 6px; }
+  .status-pill { font-size: 9.5px; background: #064e3b; color: #34d399; padding: 2px 7px; border-radius: 99px; border: 1px solid #059669; }
+  .brand p { font-size: 10px; color: #a8a29e; }
 
-  .book-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+  .book-switches { display: flex; gap: 6px; flex-wrap: wrap; }
   .book-btn {
-    background: #2c2520; color: #e7e5e4; border: 2px solid #443b34;
-    padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 800; cursor: pointer; transition: 0.15s;
+    background: #2c2520; color: #e7e5e4; border: 1.5px solid #443b34;
+    padding: 5px 12px; border-radius: 6px; font-size: 11.5px; font-weight: 800; cursor: pointer; transition: 0.15s;
   }
-  .book-btn:hover { border-color: var(--amber-br); }
-  .book-btn.active { background: var(--amber-br); color: #14110f; border-color: #fff; box-shadow: 0 0 12px rgba(245,158,11,0.5); }
+  .book-btn.active { background: var(--amber-br); color: #14110f; border-color: #fff; box-shadow: 0 0 10px rgba(245,158,11,0.5); }
 
-  /* WEEK BAR */
+  /* WEEK & FLIP NAV BAR */
   .week-bar {
-    max-width: 1400px; width: 100%; margin: 0 auto; background: #27211c;
+    max-width: 1420px; width: 100%; margin: 0 auto; background: #27211c;
     border-left: 1px solid var(--border); border-right: 1px solid var(--border);
-    padding: 7px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    padding: 5px 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;
   }
-  .week-tabs { display: flex; gap: 5px; flex-wrap: wrap; }
+  .week-tabs { display: flex; gap: 3px; flex-wrap: wrap; max-height: 32px; overflow-y: auto; }
   .week-btn {
     background: #181411; color: #d6d3d1; border: 1px solid #443b34;
-    padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.12s;
+    padding: 3px 8px; border-radius: 4px; font-size: 10.5px; font-weight: 700; cursor: pointer;
   }
-  .week-btn:hover { background: #3a312a; color: #fff; }
   .week-btn.active { background: #fffbeb; color: #92400e; border-color: var(--amber-br); font-weight: 800; }
 
-  /* OPEN BOOK SPREAD */
+  /* 3D BOOK SPREAD */
+  .book-viewport {
+    max-width: 1420px; width: 100%; margin: 0 auto; flex: 1; min-height: 0;
+    perspective: 1600px; position: relative;
+  }
   .book-spread {
-    max-width: 1400px; width: 100%; margin: 0 auto; flex: 1;
-    display: grid; grid-template-columns: 1fr 1fr; background: var(--page-l);
-    border: 4px solid #382f28; border-radius: 0 0 10px 10px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.85); position: relative; overflow: hidden;
+    width: 100%; height: 100%; display: grid; grid-template-columns: 1fr 1fr;
+    background: var(--page-l); border: 3.5px solid #382f28; border-radius: 0 0 8px 8px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.8); position: relative; transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
   }
   @media (max-width: 960px) { .book-spread { grid-template-columns: 1fr; } .spine { display: none; } }
   .spine {
-    position: absolute; top: 0; bottom: 0; left: 50%; width: 24px; transform: translateX(-50%);
-    background: linear-gradient(90deg, rgba(0,0,0,0.02), rgba(0,0,0,0.18) 48%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.15) 52%, rgba(0,0,0,0.02));
+    position: absolute; top: 0; bottom: 0; left: 50%; width: 22px; transform: translateX(-50%);
+    background: linear-gradient(90deg, rgba(0,0,0,0.02), rgba(0,0,0,0.2) 48%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.18) 52%, rgba(0,0,0,0.02));
     pointer-events: none; z-index: 10;
   }
-  .page-l { padding: 16px 20px; background: var(--page-l); border-right: 1px solid #e7e0d2; display: flex; flex-direction: column; justify-content: space-between; }
-  .page-r { padding: 16px 20px; background: var(--page-r); display: flex; flex-direction: column; justify-content: space-between; }
-  .page-hdr { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e5dccb; padding-bottom: 6px; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
-  .badge { background: var(--amber-lt); color: #92400e; font-size: 10.5px; font-weight: 800; text-transform: uppercase; padding: 3px 9px; border-radius: 5px; }
-  .pos-badge { background: #ede9fe; color: #5b21b6; font-size: 10.5px; font-weight: 800; text-transform: uppercase; padding: 3px 9px; border-radius: 5px; }
-  .title-serif { font-family: Georgia, serif; font-size: 21px; font-weight: 700; color: #1c1917; margin-bottom: 5px; }
-  .goal-box { background: #fffbeb; border-left: 4px solid var(--amber); padding: 7px 11px; border-radius: 0 6px 6px 0; margin-bottom: 9px; font-size: 12px; line-height: 1.38; }
-  .goal-box strong { color: #92400e; display: block; font-size: 10px; text-transform: uppercase; margin-bottom: 2px; }
 
-  .sec-lbl { font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; display: flex; justify-content: space-between; }
-  .checklist { display: flex; flex-direction: column; gap: 4px; margin-bottom: 9px; }
-  .chk-item { display: flex; align-items: flex-start; gap: 8px; background: #fff; border: 1px solid #e5dccb; padding: 5px 9px; border-radius: 6px; font-size: 11.5px; cursor: pointer; }
-  .chk-item input { margin-top: 2px; accent-color: var(--amber); width: 14px; height: 14px; cursor: pointer; }
+  .page-l { padding: 12px 18px; background: var(--page-l); border-right: 1px solid #e7e0d2; display: flex; flex-direction: column; justify-content: space-between; overflow-y: auto; }
+  .page-r { padding: 12px 18px; background: var(--page-r); display: flex; flex-direction: column; justify-content: space-between; overflow-y: auto; }
+  .page-hdr { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e5dccb; padding-bottom: 5px; margin-bottom: 6px; flex-wrap: wrap; gap: 4px; }
+  .badge { background: var(--amber-lt); color: #92400e; font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; }
+  .pos-badge { background: #ede9fe; color: #5b21b6; font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; }
+  .title-serif { font-family: Georgia, serif; font-size: 19px; font-weight: 700; color: #1c1917; margin-bottom: 4px; }
+  .goal-box { background: #fffbeb; border-left: 4px solid var(--amber); padding: 6px 10px; border-radius: 0 5px 5px 0; margin-bottom: 6px; font-size: 11px; line-height: 1.35; }
+  .goal-box strong { color: #92400e; display: block; font-size: 9.5px; text-transform: uppercase; margin-bottom: 1px; }
+
+  .sec-lbl { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; display: flex; justify-content: space-between; }
+  .checklist { display: flex; flex-direction: column; gap: 3px; margin-bottom: 6px; max-height: 100px; overflow-y: auto; }
+  .chk-item { display: flex; align-items: flex-start; gap: 6px; background: #fff; border: 1px solid #e5dccb; padding: 4px 8px; border-radius: 5px; font-size: 11px; cursor: pointer; }
+  .chk-item input { margin-top: 2px; accent-color: var(--amber); width: 13px; height: 13px; }
   .chk-item.done span { text-decoration: line-through; color: #a8a29e; }
 
-  .picker-box { background: #f3ede0; border: 1px solid #dcd3c0; border-radius: 8px; padding: 9px 11px; margin-bottom: 9px; }
-  .btn { border: none; padding: 6px 11px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: 0.12s; }
+  /* AI MASTERCLASS CONSOLE (MOVED TO LEFT PAGE FOR ZERO-SCROLL LAPTOP FIT) */
+  .ai-console {
+    background: #181411; color: #fff; border: 1.5px solid #3a312a; border-left: 4px solid var(--amber-br);
+    border-radius: 7px; padding: 8px 10px; margin-bottom: 6px;
+  }
+  .ai-console.briefing { border-left-color: #38bdf8; background: #0c2536; }
+  .ai-console.listening { border-left-color: var(--purple); background: #22113b; }
+  .ai-console.good { border-left-color: var(--emerald-br); background: #062c1e; }
+  .ai-console.fix { border-left-color: var(--amber-br); background: #332008; }
+  .ai-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; flex-wrap: wrap; gap: 4px; }
+  .trainer-pills { display: flex; gap: 3px; align-items: center; flex-wrap: wrap; }
+  .tpill { background: #2c2520; color: #d6d3d1; border: 1px solid #443b34; padding: 2px 6px; border-radius: 4px; font-size: 9.5px; font-weight: 700; cursor: pointer; }
+  .tpill.active { background: var(--amber-br); color: #14110f; border-color: #fff; font-weight: 800; }
+  .ai-speech { font-size: 11px; font-weight: 600; color: #fef3c7; line-height: 1.35; margin-bottom: 5px; }
+
+  /* Q&A BAR (ASK CLARA / MAESTRO) */
+  .qa-box { background: #25201c; border: 1px solid #443b34; border-radius: 6px; padding: 6px 8px; margin-top: 5px; }
+  .qa-input-row { display: flex; gap: 4px; margin-top: 4px; }
+  .qa-input { flex: 1; background: #14110f; color: #fff; border: 1px solid #574c43; border-radius: 4px; padding: 4px 6px; font-size: 10.5px; }
+
+  .btn { border: none; padding: 5px 10px; border-radius: 5px; font-size: 10.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; transition: 0.1s; }
   .btn:active { transform: scale(0.96); }
   .btn-amber { background: var(--amber); color: #fff; }
   .btn-emerald { background: var(--emerald); color: #fff; }
   .btn-purple { background: var(--purple); color: #fff; }
-  .btn-rose { background: var(--rose); color: #fff; }
   .btn-dark { background: #292524; color: #fff; }
   .btn-outline { background: #fff; color: #292524; border: 1px solid #d6d3d1; }
-  .btn-outline.active { background: var(--amber-br); color: #14110f; border-color: #92400e; font-weight: 800; }
 
-  .hw-box { background: #26211d; color: #fef3c7; padding: 9px 11px; border-radius: 8px; font-size: 11.5px; line-height: 1.35; }
-  .hw-box strong { color: var(--amber-br); text-transform: uppercase; font-size: 10px; display: block; margin-bottom: 2px; }
+  .hw-box { background: #26211d; color: #fef3c7; padding: 7px 10px; border-radius: 6px; font-size: 11px; line-height: 1.3; }
+  .hw-box strong { color: var(--amber-br); text-transform: uppercase; font-size: 9.5px; display: block; margin-bottom: 1px; }
 
-  /* RIGHT PAGE: AI MASTERCLASS + SCORE + FINGERBOARD */
-  .ex-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
-  .ex-tab { background: #e7e5e4; color: #44403c; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; }
+  /* RIGHT PAGE ELEMENTS */
+  .ex-tabs { display: flex; gap: 3px; flex-wrap: wrap; }
+  .ex-tab { background: #e7e5e4; color: #44403c; border: none; padding: 3px 8px; border-radius: 5px; font-size: 10.5px; font-weight: 700; cursor: pointer; }
   .ex-tab.active { background: #92400e; color: #fff; }
 
-  .mp3-bar { background: #f5efe2; border: 1px solid #dfd5c0; border-radius: 8px; padding: 6px 10px; margin-bottom: 7px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
-  .spd-btn { background: #fff; color: #292524; border: 1px solid #d6d3d1; padding: 3px 8px; border-radius: 99px; font-size: 10px; font-weight: 700; cursor: pointer; }
+  .mp3-bar { background: #f5efe2; border: 1px solid #dfd5c0; border-radius: 6px; padding: 5px 8px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 5px; }
+  .spd-btn { background: #fff; color: #292524; border: 1px solid #d6d3d1; padding: 2px 7px; border-radius: 99px; font-size: 10px; font-weight: 700; cursor: pointer; }
   .spd-btn.active { background: #9a5b13; color: #fff; border-color: #9a5b13; }
 
-  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; background: #f5f2eb; border: 1px solid #e5dec9; padding: 6px 9px; border-radius: 8px; margin-bottom: 7px; }
-
-  /* AI MASTERCLASS CONSOLE */
-  .ai-trainer-box {
-    background: #181411; color: #fff; border: 2px solid #443b34; border-left: 5px solid var(--amber-br);
-    border-radius: 9px; padding: 9px 12px; margin-bottom: 8px; transition: 0.2s;
-  }
-  .ai-trainer-box.briefing { border-left-color: #38bdf8; background: #0c2536; }
-  .ai-trainer-box.listening { border-left-color: var(--purple); background: #22113b; }
-  .ai-trainer-box.review-good { border-left-color: var(--emerald-br); background: #062c1e; }
-  .ai-trainer-box.review-fix { border-left-color: var(--amber-br); background: #332008; }
-  .ai-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px; }
-  .trainer-Controls { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
-  .trainer-pill {
-    background: #2c2520; color: #d6d3d1; border: 1px solid #574c43;
-    padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; cursor: pointer;
-  }
-  .trainer-pill.active { background: var(--amber-br); color: #14110f; border-color: #fff; font-weight: 800; }
-  .ai-speech { font-size: 12px; font-weight: 600; color: #fef3c7; line-height: 1.4; margin-bottom: 7px; }
-  .obs-bar-wrap {
-    display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.35);
-    padding: 5px 8px; border-radius: 6px; margin-bottom: 6px; font-size: 10.5px; font-family: monospace;
-  }
-  .hold-track { flex: 1; height: 8px; background: #2c2520; border-radius: 99px; overflow: hidden; }
-  .hold-fill { height: 100%; width: 0%; background: var(--emerald-br); transition: width 0.08s linear; }
-  .ai-sim-bar { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.12); font-size: 10px; color: #a8a29e; }
-
-  .score-card { background: #fff; border: 2px solid #e7e0d2; border-radius: 8px; padding: 7px 9px; margin-bottom: 8px; overflow-x: auto; }
-  .bow-bar-wrap { display: flex; align-items: center; gap: 10px; margin-top: 5px; padding-top: 5px; border-top: 1px solid #f0ece1; font-size: 11px; }
-  .bow-track { flex: 1; height: 8px; background: #e7e5e4; border-radius: 99px; overflow: hidden; }
-  .bow-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #d97706, #f59e0b); transition: width 0.15s linear; }
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; background: #f5f2eb; border: 1px solid #e5dec9; padding: 5px 8px; border-radius: 6px; margin-bottom: 6px; }
+  .score-card { background: #fff; border: 2px solid #e7e0d2; border-radius: 7px; padding: 6px 8px; margin-bottom: 6px; overflow-x: auto; }
+  .bow-wrap { display: flex; align-items: center; gap: 8px; margin-top: 4px; padding-top: 4px; border-top: 1px solid #f0ece1; font-size: 10.5px; }
+  .bow-track { flex: 1; height: 7px; background: #e7e5e4; border-radius: 99px; overflow: hidden; }
+  .bow-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #d97706, #f59e0b); transition: width 0.1s linear; }
 
   /* FINGERBOARD */
-  .fb-card { background: #1c1815; color: #fff; padding: 8px 11px; border-radius: 8px; border: 1px solid #3a312a; }
-  .pos-btn { background: #2c2520; color: #d6d3d1; border: 1px solid #443b34; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer; }
+  .fb-card { background: #1c1815; color: #fff; padding: 7px 10px; border-radius: 7px; border: 1px solid #3a312a; }
+  .pos-btn { background: #2c2520; color: #d6d3d1; border: 1px solid #443b34; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer; }
   .pos-btn.active { background: var(--amber-br); color: #14110f; border-color: #fff; }
-  .fb-grid { background: #2b1d14; border-left: 6px solid #a8a29e; border-radius: 5px; padding: 5px; margin-top: 5px; }
-  .fb-hdr { display: grid; grid-template-columns: 30px repeat(5, 1fr); font-size: 9px; color: #fcd34d; text-align: center; padding-bottom: 3px; border-bottom: 1px solid #443b34; margin-bottom: 4px; font-family: monospace; }
-  .fb-row { display: grid; grid-template-columns: 30px repeat(5, 1fr); gap: 4px; align-items: center; margin-bottom: 3px; }
-  .fb-str { font-weight: 800; font-size: 11px; color: var(--amber-br); text-align: center; }
-  .fb-cell { background: #29231e; color: #e7e5e4; border: 1px solid #574c43; border-radius: 4px; padding: 3.5px 2px; font-size: 9.5px; font-family: monospace; cursor: pointer; text-align: center; transition: 0.1s; }
+  .fb-grid { background: #2b1d14; border-left: 5px solid #a8a29e; border-radius: 4px; padding: 4px; margin-top: 4px; }
+  .fb-hdr { display: grid; grid-template-columns: 28px repeat(5, 1fr); font-size: 8.5px; color: #fcd34d; text-align: center; padding-bottom: 2px; border-bottom: 1px solid #443b34; margin-bottom: 3px; font-family: monospace; }
+  .fb-row { display: grid; grid-template-columns: 28px repeat(5, 1fr); gap: 3px; align-items: center; margin-bottom: 3px; }
+  .fb-str { font-weight: 800; font-size: 10.5px; color: var(--amber-br); text-align: center; }
+  .fb-cell { background: #29231e; color: #e7e5e4; border: 1px solid #574c43; border-radius: 3px; padding: 3px 2px; font-size: 9px; font-family: monospace; cursor: pointer; text-align: center; }
   .fb-cell.active { background: var(--amber-br) !important; color: #14110f !important; font-weight: 800; border-color: #fff; }
-  .fb-cell.wrong-flash { background: var(--rose) !important; color: #fff !important; border-color: #fff; }
 
-  /* BOTTOM DOCK */
-  .dock { max-width: 1400px; width: 100%; margin: 6px auto 0; background: var(--panel); color: #fff; border: 1px solid var(--border); border-radius: 9px; padding: 8px 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
-  .dock-box { background: #161310; border: 1px solid #332b24; border-radius: 7px; padding: 7px 10px; display: flex; flex-direction: column; justify-content: space-between; gap: 5px; }
-  .dock-ttl { font-size: 9.5px; font-weight: 800; text-transform: uppercase; color: var(--amber-br); display: flex; justify-content: space-between; }
-  .beat-dots { display: flex; gap: 6px; align-items: center; }
-  .beat-dot { width: 13px; height: 13px; border-radius: 50%; background: #332b24; border: 2px solid #443b34; }
+  /* BOTTOM STUDIO DOCK */
+  .dock { max-width: 1420px; width: 100%; margin: 6px auto 0; background: var(--panel); color: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 8px; }
+  .dock-box { background: #161310; border: 1px solid #332b24; border-radius: 6px; padding: 6px 9px; display: flex; flex-direction: column; justify-content: space-between; gap: 4px; }
+  .dock-ttl { font-size: 9px; font-weight: 800; text-transform: uppercase; color: var(--amber-br); display: flex; justify-content: space-between; }
+  .beat-dots { display: flex; gap: 5px; align-items: center; }
+  .beat-dot { width: 12px; height: 12px; border-radius: 50%; background: #332b24; border: 2px solid #443b34; }
   .beat-dot.down { background: var(--amber-br); transform: scale(1.25); border-color: #fff; }
-  .beat-dot.sub { background: var(--emerald-br); transform: scale(1.12); }
-  .tuner-bar { position: relative; height: 15px; background: linear-gradient(90deg, #e11d48 0%, #f59e0b 35%, #10b981 50%, #f59e0b 65%, #e11d48 100%); border-radius: 4px; overflow: hidden; }
-  .tuner-ndl { position: absolute; top: 1px; bottom: 1px; left: 50%; width: 5px; margin-left: -2.5px; background: #14110f; border: 1.5px solid #fff; transition: left 0.1s; }
-  .drone-btn { background: #29231e; color: #d6d3d1; border: 1px solid #443b34; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: 700; cursor: pointer; }
+  .beat-dot.sub { background: var(--emerald-br); transform: scale(1.1); }
+  .tuner-bar { position: relative; height: 14px; background: linear-gradient(90deg, #e11d48 0%, #f59e0b 35%, #10b981 50%, #f59e0b 65%, #e11d48 100%); border-radius: 3px; overflow: hidden; }
+  .tuner-ndl { position: absolute; top: 1px; bottom: 1px; left: 50%; width: 5px; margin-left: -2.5px; background: #14110f; border: 1px solid #fff; transition: left 0.1s; }
+  .drone-btn { background: #29231e; color: #d6d3d1; border: 1px solid #443b34; padding: 2px 6px; border-radius: 3px; font-size: 9.5px; font-family: monospace; font-weight: 700; cursor: pointer; }
   .drone-btn.active { background: var(--amber-br); color: #14110f; border-color: #fff; }
-  select.sel { background:#fff; color:#292524; border:1px solid #d6d3d1; border-radius:5px; font-size:10.5px; padding:3px 6px; font-weight:700; cursor:pointer; }
-  select.sel-dark { background:#29231e; color:#fff; border:1px solid #443b34; border-radius:4px; font-size:10px; padding:2px 5px; font-weight:600; }
+  select.sel { background:#fff; color:#292524; border:1px solid #d6d3d1; border-radius:4px; font-size:10px; padding:3px 5px; font-weight:700; cursor:pointer; }
+  select.sel-dark { background:#29231e; color:#fff; border:1px solid #443b34; border-radius:3px; font-size:9.5px; padding:2px 4px; font-weight:600; }
 
-  .note-head { cursor: pointer; transition: 0.12s; }
+  .note-head { cursor: pointer; transition: 0.1s; }
   .note-on { fill: var(--amber) !important; stroke: var(--amber) !important; }
   .note-ok { fill: var(--emerald) !important; stroke: var(--emerald) !important; }
   .note-flat { fill: #eab308 !important; stroke: #ca8a04 !important; }
@@ -173,317 +166,244 @@
   <!-- TOP HEADER -->
   <header class="top-bar">
     <div class="brand">
-      <h1>🎻 Violin Living Book & AI Masterclass <span class="status-pill">🟢 Brief → Play → Review Active</span></h1>
-      <p>Choose Male or Female AI Teacher · Full-Phrase Observation · Book 1 (W1–24) & Book 2 (Positions & 24 Scales)</p>
+      <h1>🎻 Living Violin Book & AI Masterclass <span class="status-pill">🟢 3D Flip-Book & Emotional AI Active</span></h1>
+      <p>Book 1 (W1–24) & Book 2 (Positions & 24 Scales) · Flip Pages or Use Week Tabs</p>
     </div>
-    <div class="book-tabs">
-      <button type="button" class="book-btn active" id="btn-book1" data-action="book" data-val="1">📘 BOOK 1: Foundations & Songs (W1–24)</button>
-      <button type="button" class="book-btn" id="btn-book2" data-action="book" data-val="2">📙 BOOK 2: Positions & Scales (W25–48)</button>
+    <div class="book-switches">
+      <button type="button" class="book-btn active" id="btn-book1" onclick="switchBook(1)">📘 BOOK 1 (W1–24)</button>
+      <button type="button" class="book-btn" id="btn-book2" onclick="switchBook(2)">📙 BOOK 2 (W25–48)</button>
     </div>
   </header>
 
-  <!-- WEEK / CHAPTER BAR -->
+  <!-- CHAPTER / WEEK BAR -->
   <nav class="week-bar">
     <div class="week-tabs" id="week-tabs"></div>
+    <div style="display: flex; gap: 4px;">
+      <button type="button" class="btn btn-outline" style="padding: 3px 8px; font-size: 10px;" onclick="flipPage(-1)">⬅ Prev Page</button>
+      <button type="button" class="btn btn-outline" style="padding: 3px 8px; font-size: 10px;" onclick="flipPage(1)">Next Page ➔</button>
+    </div>
   </nav>
 
-  <!-- OPEN BOOK SPREAD -->
-  <main class="book-spread">
-    <div class="spine"></div>
+  <!-- 3D FLIP-BOOK SPREAD -->
+  <div class="book-viewport">
+    <main class="book-spread" id="book-spread-elem">
+      <div class="spine"></div>
 
-    <!-- LEFT PAGE -->
-    <section class="page-l">
-      <div>
-        <div class="page-hdr">
-          <span class="badge" id="w-badge">Book 1 · Week 1</span>
-          <span class="pos-badge" id="w-pos-badge">1st Position</span>
-        </div>
-
-        <h2 class="title-serif" id="w-title">Week 1: Pizzicato on Open Strings</h2>
-
-        <div class="goal-box">
-          <strong>Lesson Goal & Focus</strong>
-          <span id="w-goal">Stand in playing position, hold the violin for 30 seconds, and pluck open strings A, E, D, G.</span>
-        </div>
-
-        <div class="sec-lbl">
-          <span>Weekly Practice Checklist (Click to Tick)</span>
-          <span id="chk-count" style="color: var(--amber);">0/3 Done</span>
-        </div>
-        <div class="checklist" id="chk-box"></div>
-
-        <!-- QUICK LIBRARY: SCALES, PIECES & RHYTHM PAD -->
-        <div class="picker-box">
-          <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: #78350f; margin-bottom: 6px;">
-            🎼 Quick Library: All 24 Scales, Repertoire Pieces & Rhythm Pad
-          </div>
-          <div style="display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 7px;">
-            <select class="sel" id="scale-picker">
-              <option value="">🎼 Select Any 2-Octave Scale (Book 2)...</option>
-              <optgroup label="12 Major Scales (♩=80)">
-                <option value="C|maj|3|sc_major_C">C Major (3rd Pos)</option>
-                <option value="G|maj|1|sc_major_G">G Major (1st Pos)</option>
-                <option value="D|maj|3|sc_major_D">D Major (3rd Pos)</option>
-                <option value="A|maj|1|sc_major_A">A Major (1st Pos)</option>
-                <option value="E|maj|1|sc_major_E">E Major (1st & 5th Pos)</option>
-                <option value="B|maj|1|sc_major_B">B Major (1st Pos)</option>
-                <option value="F#|maj|3|sc_major_Fs">F♯ Major (3rd & 5th Pos)</option>
-                <option value="Db|maj|3|sc_major_Db">D♭ Major (3rd Pos)</option>
-                <option value="Ab|maj|1|sc_major_Ab">A♭ Major (1st Pos)</option>
-                <option value="Eb|maj|1|sc_major_Eb">E♭ Major (1st & 5th Pos)</option>
-                <option value="Bb|maj|1|sc_major_Bb">B♭ Major (1st Pos)</option>
-                <option value="F|maj|1|sc_major_F">F Major (1st & 5th Pos)</option>
-              </optgroup>
-              <optgroup label="12 Minor Scales (♩=80)">
-                <option value="A|min|1|sc_minor_A">A Minor (1st Pos)</option>
-                <option value="E|min|1|sc_minor_E">E Minor (1st & 5th Pos)</option>
-                <option value="B|min|1|sc_minor_B">B Minor (1st Pos)</option>
-                <option value="F#|min|1|sc_minor_Fs">F♯ Minor (1st & 5th Pos)</option>
-                <option value="C#|min|3|sc_minor_Cs">C♯ Minor (3rd Pos)</option>
-                <option value="G#|min|0|sc_minor_Gs">G♯ Minor (½ Pos)</option>
-                <option value="Eb|min|1|sc_minor_Eb">E♭ Minor (1st & 5th Pos)</option>
-                <option value="Bb|min|1|sc_minor_Bb">B♭ Minor (1st Pos)</option>
-                <option value="F|min|1|sc_minor_F">F Minor (1st & 5th Pos)</option>
-                <option value="C|min|3|sc_minor_C">C Minor (3rd Pos)</option>
-                <option value="G|min|1|sc_minor_G">G Minor (1st Pos)</option>
-                <option value="D|min|3|sc_minor_D">D Minor (3rd Pos)</option>
-              </optgroup>
-            </select>
-
-            <select class="sel" id="piece-picker">
-              <option value="">🎵 Select Play-Along Piece...</option>
-              <optgroup label="Book 1 Pieces">
-                <option value="Hot Cross Buns|1|72|audio/piece01.mp3|B4,A4,G4,B4,A4,G4,G4,A4,B4,A4,G4">1. Hot Cross Buns</option>
-                <option value="Mary Had a Little Lamb|1|72|audio/piece02.mp3|B4,A4,G4,A4,B4,B4,B4,A4,A4,A4,B4,D5,D5">2. Mary Had a Little Lamb</option>
-                <option value="Twinkle, Twinkle, Little Star|1|72|audio/piece03.mp3|A4,A4,E5,E5,F#5,F#5,E5,D5,D5,C#5,C#5,B4,B4,A4">3. Twinkle, Twinkle (1st Pos)</option>
-                <option value="Little Hans|1|72|audio/piece04.mp3|E5,C#5,C#5,D5,B4,B4,A4,B4,C#5,D5,E5,E5,E5">4. Little Hans</option>
-                <option value="Au Clair de la Lune|1|72|audio/piece05.mp3|A4,A4,A4,B4,C#5,B4,A4,C#5,B4,B4,A4">5. Au Clair de la Lune</option>
-                <option value="Ode to Joy (1st Pos)|1|72|audio/piece06.mp3|C#5,C#5,D5,E5,E5,D5,C#5,B4,A4,A4,B4,C#5,C#5,B4,B4">6. Ode to Joy (1st Pos)</option>
-                <option value="Frere Jacques|1|72|audio/piece07.mp3|A4,B4,C#5,A4,A4,B4,C#5,A4,C#5,D5,E5">7. Frère Jacques</option>
-                <option value="Amazing Grace (1st Pos)|1|76|audio/piece08.mp3|D4,G4,B4,G4,B4,A4,G4,E4,D4">8. Amazing Grace (1st Pos)</option>
-                <option value="Minuet in G|1|84|audio/piece09.mp3|D5,G4,A4,B4,C5,D5,G4,G4,E5,C5,D5,E5,F#5,G5,G4,G4">9. Minuet in G</option>
-                <option value="Greensleeves|1|80|audio/piece10.mp3|A4,C5,D5,E5,F5,E5,D5,B4,G4,A4,B4,C5,A4">10. Greensleeves</option>
-              </optgroup>
-              <optgroup label="Book 2 Pieces in Positions">
-                <option value="Ode to Joy (3rd Pos)|3|72|audio2/b2_ode_3rd.mp3|F#5,F#5,G5,A5,A5,G5,F#5,E5,D5,D5,E5,F#5,E5,D5">Book 2: Ode to Joy (3rd Pos)</option>
-                <option value="Amazing Grace (3rd Pos)|3|76|audio2/b2_grace_3rd.mp3|D4,G4,B4,G4,B4,A4,G4,E4,D4">Book 2: Amazing Grace (3rd Pos)</option>
-                <option value="Twinkle (5th Pos)|5|72|audio2/b2_twinkle_5th.mp3|A5,A5,E6,E6,F#6,F#6,E6,D6,D6,C#6,C#6,B5,B5,A5">Book 2: Twinkle (5th Pos)</option>
-                <option value="Bagpipe Dance (Double Stops)|1|72|audio2/b2_ds_bagpipe.mp3|A4,B4,C#5,D5,E5,C#5,D5,B4,A4">Book 2: Bagpipe Dance</option>
-              </optgroup>
-            </select>
+      <!-- LEFT PAGE: LESSON GUIDE, QUICK LIBRARY & AI MASTERCLASS CONSOLE -->
+      <section class="page-l">
+        <div>
+          <div class="page-hdr">
+            <span class="badge" id="w-badge">Book 1 · Week 1</span>
+            <span class="pos-badge" id="w-pos-badge">1st Position</span>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-top: 1px solid #dcd3c0; padding-top: 6px;">
-            <button type="button" class="btn btn-amber" data-action="clap">👏 Tap / Clap Rhythm Pad</button>
-            <span id="tap-msg" style="font-size: 11px; font-weight: 700; color: var(--emerald);">Tap in time with the beat!</span>
+          <h2 class="title-serif" id="w-title">Week 1: Pizzicato on Open Strings</h2>
+
+          <div class="goal-box">
+            <strong>Lesson Goal & Focus</strong>
+            <span id="w-goal">Stand in playing position, hold the violin for 30 seconds, and pluck open strings.</span>
           </div>
-        </div>
-      </div>
 
-      <div class="hw-box">
-        <strong>📓 Position & Shifting Rule</strong>
-        <span id="pos-desc">In the Nth position, your 1st finger plays the note N letters above the open string. Move your thumb with your hand on every shift!</span>
-      </div>
-    </section>
-
-    <!-- RIGHT PAGE: AI MASTERCLASS + SHEET MUSIC + FINGERBOARD -->
-    <section class="page-r">
-      <div>
-        <div class="page-hdr">
-          <div class="ex-tabs" id="ex-tabs"></div>
-          <div style="display: flex; gap: 5px; align-items: center;">
-            <select id="sig-sel" class="sel">
-              <option value="4">4/4 Time</option>
-              <option value="3">3/4 Waltz</option>
-              <option value="2">2/4 March</option>
-            </select>
-            <span class="badge" id="bpm-badge">♩ = 60 BPM</span>
+          <div class="sec-lbl">
+            <span>Weekly Practice Checklist (Click to Tick)</span>
+            <span id="chk-count" style="color: var(--amber);">0/3 Done</span>
           </div>
-        </div>
+          <div class="checklist" id="chk-box"></div>
 
-        <h3 class="title-serif" style="font-size: 18.5px; margin-bottom: 2px;" id="ex-title">Exercise 1.1 · Pluck A and E</h3>
-        <p style="font-size: 11px; color: var(--muted); margin-bottom: 5px;" id="ex-desc">Click "🎓 Start AI Masterclass": your chosen teacher will brief you, listen silently while you play the full line, and review your notes at the end!</p>
-
-        <!-- MP3 PLAY-ALONG BAR -->
-        <div class="mp3-bar">
-          <div>
-            <span style="font-size: 10px; font-weight: 800; color: #78350f;">🎧 MP3:</span>
-            <code id="mp3-path" style="font-size: 10px; color: #9a5b13; font-weight: 700;">audio/ex01_1.mp3</code>
-          </div>
-          <div style="display: flex; gap: 4px;">
-            <button type="button" class="spd-btn" id="r-75" data-action="rate" data-val="0.75">Slow 75%</button>
-            <button type="button" class="spd-btn" id="r-90" data-action="rate" data-val="0.9">90%</button>
-            <button type="button" class="spd-btn active" id="r-100" data-action="rate" data-val="1.0">Full 100%</button>
-          </div>
-          <audio id="mp3-player" controls preload="none" src="audio/ex01_1.mp3" style="height: 26px; width: 195px;"></audio>
-        </div>
-
-        <!-- PLAY-ALONG & AI MASTERCLASS TOOLBAR -->
-        <div class="toolbar">
-          <button type="button" class="btn btn-purple" id="ai-mode-btn" data-action="start-masterclass">
-            🎓 Start AI Masterclass (Brief → Play → Review)
-          </button>
-          <button type="button" class="btn btn-emerald" id="play-btn" data-action="play-synth">
-            <span id="play-ico">▶</span> <span id="play-txt">Hear Reference Audio</span>
-          </button>
-          <button type="button" class="btn btn-amber" id="fix-btn" data-action="practice-mistakes" style="display: none;">
-            🔧 Practice Problem Notes Only
-          </button>
-          <button type="button" class="btn btn-outline" id="reset-notes-btn" data-action="restore-full" style="display: none;">
-            ↩ Full Exercise
-          </button>
-          <span id="count-lbl" style="margin-left: auto; font-size: 11px; font-weight: 800; color: var(--amber); display: none;">Count: 1</span>
-        </div>
-
-        <!-- AI MASTERCLASS CONSOLE (WITH MALE/FEMALE TRAINER & PACING SELECTOR) -->
-        <div class="ai-trainer-box" id="ai-console">
-          <div class="ai-hdr">
-            <div class="trainer-Controls">
-              <span style="font-size: 10px; font-weight: 800; color: var(--amber-br); text-transform: uppercase;">Trainer:</span>
-              <button type="button" class="trainer-pill active" id="tr-female" data-action="set-gender" data-val="female">👩 Clara (Female)</button>
-              <button type="button" class="trainer-pill" id="tr-male" data-action="set-gender" data-val="male">👨 Maestro (Male)</button>
-              <span style="font-size: 10px; font-weight: 800; color: #a8a29e; margin-left: 4px;">Pacing:</span>
-              <button type="button" class="trainer-pill active" id="pace-self" data-action="set-pace" data-val="self" title="Cursor advances silently as you play each note, then reviews at the end">🎯 Self-Paced Flow</button>
-              <button type="button" class="trainer-pill" id="pace-tempo" data-action="set-pace" data-val="tempo" title="Cursor moves strictly with the metronome beat">⏱️ Tempo Beat Flow</button>
+          <!-- AI MASTERCLASS CONSOLE (MOVED TO LEFT PAGE FOR ZERO-SCROLL LAPTOP FIT) -->
+          <div class="ai-console" id="ai-console">
+            <div class="ai-hdr">
+              <div class="trainer-pills">
+                <span style="font-size: 9.5px; font-weight: 800; color: var(--amber-br);">AI TEACHER:</span>
+                <button type="button" class="tpill active" id="tr-fem" onclick="setTrainer('female')">👩 Clara</button>
+                <button type="button" class="tpill" id="tr-male" onclick="setTrainer('male')">👨 Maestro</button>
+              </div>
+              <span style="font-size: 9.5px; font-family: monospace; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 3px;" id="ai-stage-lbl">
+                Stage: Standby
+              </span>
             </div>
-            <span style="font-size: 10.5px; font-family: monospace; background: rgba(255,255,255,0.12); padding: 2px 7px; border-radius: 4px;" id="ai-score-lbl">
-              Stage: Standby
-            </span>
-          </div>
-
-          <div class="ai-speech" id="ai-speech-txt">
-            👋 Choose <strong>👩 Clara</strong> or <strong>👨 Maestro</strong> above, then click <strong>"🎓 Start AI Masterclass"</strong>! We will brief you on the exercise first, listen quietly while you play the whole line without interruption, and give you a full review at the end.
-          </div>
-
-          <!-- LIVE OBSERVATION & PROGRESS BAR -->
-          <div class="obs-bar-wrap">
-            <span id="obs-heard-txt" style="width: 185px; color: #fcd34d;">👂 Mic: Ready</span>
-            <div class="hold-track"><div class="hold-fill" id="obs-hold-bar"></div></div>
-            <span id="obs-hold-pct" style="width: 115px; text-align: right; color: #34d399;">Line Progress: 0%</span>
-          </div>
-
-          <div class="ai-sim-bar">
-            <span>Simulate Full Student Run (No Mic Needed):</span>
-            <button type="button" class="btn btn-emerald" style="padding: 3px 8px; font-size: 10px;" data-action="sim-run" data-val="perfect">🌟 Simulate 100% Run</button>
-            <button type="button" class="btn btn-amber" style="padding: 3px 8px; font-size: 10px;" data-action="sim-run" data-val="mistakes">🔧 Simulate Run w/ 2 Mistakes</button>
-            <button type="button" class="btn btn-outline" style="padding: 2px 7px; font-size: 10px; margin-left: auto;" id="voice-btn" data-action="toggle-voice">🔊 Voice: ON</button>
-          </div>
-        </div>
-
-        <!-- SVG SHEET MUSIC -->
-        <div class="score-card">
-          <div style="font-size: 10px; color: var(--muted); margin-bottom: 3px; display:flex; justify-content:space-between;">
-            <span>💡 🟢 Green = In Tune · 🟡 Yellow = Flat/Sharp · 🔴 Red = Wrong Note</span>
-            <span id="pos-lbl" style="font-weight:800; color:#5b21b6;">Position: 1st</span>
-          </div>
-          <svg id="sheet-svg" viewBox="0 0 700 150" style="width: 100%; height: auto; min-width: 480px;"></svg>
-          <div class="bow-bar-wrap">
-            <strong id="bow-txt" style="width: 120px;">Bow: Ready</strong>
-            <div class="bow-track"><div class="bow-fill" id="bow-fill"></div></div>
-            <span id="str-lbl" style="font-weight: 700; color: #92400e; font-size: 11px;">Target: A4</span>
-          </div>
-        </div>
-
-        <!-- MULTI-POSITION FINGERBOARD -->
-        <div class="fb-card">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
-            <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
-              <span style="font-size: 10px; font-weight: 800; color: var(--amber-br);">POSITION:</span>
-              <button type="button" class="pos-btn" id="fbp-0" data-action="pos" data-val="0">½ Pos</button>
-              <button type="button" class="pos-btn active" id="fbp-1" data-action="pos" data-val="1">1st Pos</button>
-              <button type="button" class="pos-btn" id="fbp-2" data-action="pos" data-val="2">2nd Pos</button>
-              <button type="button" class="pos-btn" id="fbp-3" data-action="pos" data-val="3">3rd Pos</button>
-              <button type="button" class="pos-btn" id="fbp-4" data-action="pos" data-val="4">4th Pos</button>
-              <button type="button" class="pos-btn" id="fbp-5" data-action="pos" data-val="5">5th Pos</button>
+            <div class="ai-speech" id="ai-speech-txt">
+              👋 Choose <strong>👩 Clara</strong> or <strong>👨 Maestro</strong>, then click <strong>"🎓 Start AI Masterclass"</strong> on the right! We will brief you first, listen silently while you play the full line, and review your tone out loud.
             </div>
-            <span id="pitch-badge" style="font-family: monospace; font-size: 10px; background: #29231e; padding: 2px 7px; border-radius: 4px; color: #fcd34d;">Click any finger below to play notes!</span>
-          </div>
-          <div class="fb-grid">
-            <div class="fb-hdr" id="fb-hdr"></div>
-            <div id="fb-rows"></div>
+
+            <!-- Q&A BAR (ASK TEACHER ANY QUESTION) -->
+            <div class="qa-box">
+              <div style="font-size: 9.5px; font-weight: 800; color: #fcd34d; display:flex; justify-content:space-between;">
+                <span>💬 Ask Clara / Maestro a Question:</span>
+                <span style="color: #a8a29e; font-size: 9px;">Voice or Text</span>
+              </div>
+              <div class="qa-input-row">
+                <input type="text" id="qa-txt" class="qa-input" placeholder="e.g. How do I shift to 3rd pos? Why is my tone scratchy?" onkeydown="if(event.key==='Enter') askTeacherQ()">
+                <button type="button" class="btn btn-amber" style="padding: 3px 8px; font-size: 10px;" onclick="askTeacherQ()">Ask 🔊</button>
+                <button type="button" class="btn btn-dark" style="padding: 3px 8px; font-size: 10px;" onclick="toggleVoiceQ()">🎙️ Speak</button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #e7e0d2; font-size: 11px; color: var(--muted);">
-        <button type="button" class="btn btn-outline" data-action="step-week" data-val="-1">← Previous</button>
-        <span id="page-num" style="font-family: Georgia, serif; font-style: italic;">Book 1 · Week 1</span>
-        <button type="button" class="btn btn-outline" data-action="step-week" data-val="1">Next →</button>
-      </div>
-    </section>
-  </main>
+        <div class="hw-box">
+          <strong>📓 Position & Practice Note</strong>
+          <span id="pos-desc">In the Nth position, your 1st finger plays the note N letters above the open string. Move your thumb with your hand on every shift!</span>
+        </div>
+      </section>
+
+      <!-- RIGHT PAGE: MUSIC STAND (EXERCISES, MP3 PLAYER, SHEET MUSIC & FINGERBOARD) -->
+      <section class="page-r">
+        <div>
+          <div class="page-hdr">
+            <div class="ex-tabs" id="ex-tabs"></div>
+            <div style="display: flex; gap: 4px; align-items: center;">
+              <select id="sig-sel" class="sel" onchange="changeSig(this.value)">
+                <option value="4">4/4 Time</option>
+                <option value="3">3/4 Waltz</option>
+                <option value="2">2/4 March</option>
+              </select>
+              <span class="badge" id="bpm-badge">♩ = 60 BPM</span>
+            </div>
+          </div>
+
+          <h3 class="title-serif" style="font-size: 18px; margin-bottom: 2px;" id="ex-title">Exercise 1.1</h3>
+          <p style="font-size: 10.5px; color: var(--muted); margin-bottom: 5px;" id="ex-desc">Click "🎓 Start AI Masterclass" or use the Play-Along audio binder.</p>
+
+          <!-- MP3 PLAY-ALONG BINDER BAR -->
+          <div class="mp3-bar">
+            <div>
+              <span style="font-size: 9.5px; font-weight: 800; color: #78350f;">🎧 MP3 TRACK:</span>
+              <code id="mp3-path" style="font-size: 10px; color: #9a5b13; font-weight: 700;">audio/ex01_1.mp3</code>
+            </div>
+            <div style="display: flex; gap: 3px;">
+              <button type="button" class="spd-btn" id="r-75" onclick="setAudioRate(0.75)">Slow 75%</button>
+              <button type="button" class="spd-btn" id="r-90" onclick="setAudioRate(0.9)">90%</button>
+              <button type="button" class="spd-btn active" id="r-100" onclick="setAudioRate(1.0)">Full 100%</button>
+            </div>
+            <audio id="mp3-player" controls preload="none" src="audio/ex01_1.mp3" style="height: 26px; width: 185px;"></audio>
+          </div>
+
+          <!-- MASTERCLASS TOOLBAR -->
+          <div class="toolbar">
+            <button type="button" class="btn btn-purple" id="masterclass-btn" onclick="startMasterclass()">
+              🎓 Start AI Masterclass (Brief → Play → Review)
+            </button>
+            <button type="button" class="btn btn-emerald" onclick="togglePlayAlong()">
+              <span id="play-ico">▶</span> <span id="play-txt">Reference Synth</span>
+            </button>
+            <button type="button" class="btn btn-amber" id="fix-btn" style="display:none;" onclick="practiceMistakesOnly()">
+              🔧 Fix Problem Notes Only
+            </button>
+            <button type="button" class="btn btn-outline" id="reset-notes-btn" style="display:none;" onclick="resetFullExercise()">
+              ↩ Full Exercise
+            </button>
+            <span id="count-lbl" style="margin-left: auto; font-size: 10.5px; font-weight: 800; color: var(--amber); display: none;">Count: 1</span>
+          </div>
+
+          <!-- SVG SHEET MUSIC -->
+          <div class="score-card">
+            <div style="font-size: 9.5px; color: var(--muted); margin-bottom: 2px; display:flex; justify-content:space-between;">
+              <span>💡 🟢 In Tune · 🟡 Flat/Sharp · 🔴 Wrong Note</span>
+              <span id="pos-lbl" style="font-weight:800; color:#5b21b6;">Position: 1st</span>
+            </div>
+            <svg id="sheet-svg" viewBox="0 0 700 150" style="width: 100%; height: auto; min-width: 460px;"></svg>
+            <div class="bow-wrap">
+              <strong id="bow-txt" style="width: 110px;">Bow: Ready</strong>
+              <div class="bow-track"><div class="bow-fill" id="bow-fill"></div></div>
+              <span id="str-lbl" style="font-weight: 700; color: #92400e; font-size: 10.5px;">Target: A4</span>
+            </div>
+          </div>
+
+          <!-- FINGERBOARD -->
+          <div class="fb-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
+              <div style="display: flex; align-items: center; gap: 3px; flex-wrap: wrap;">
+                <span style="font-size: 9.5px; font-weight: 800; color: var(--amber-br);">POS:</span>
+                <button type="button" class="pos-btn" id="fbp-0" onclick="setPos(0)">½</button>
+                <button type="button" class="pos-btn active" id="fbp-1" onclick="setPos(1)">1st</button>
+                <button type="button" class="pos-btn" id="fbp-2" onclick="setPos(2)">2nd</button>
+                <button type="button" class="pos-btn" id="fbp-3" onclick="setPos(3)">3rd</button>
+                <button type="button" class="pos-btn" id="fbp-4" onclick="setPos(4)">4th</button>
+                <button type="button" class="pos-btn" id="fbp-5" onclick="setPos(5)">5th</button>
+              </div>
+              <span id="pitch-badge" style="font-family: monospace; font-size: 10px; background: #29231e; padding: 2px 6px; border-radius: 3px; color: #fcd34d;">Click any finger to play!</span>
+            </div>
+            <div class="fb-grid">
+              <div class="fb-hdr" id="fb-hdr"></div>
+              <div id="fb-rows"></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 5px; border-top: 1px solid #e7e0d2; font-size: 10.5px; color: var(--muted);">
+          <button type="button" class="btn btn-outline" onclick="stepWeek(-1)">← Prev Week</button>
+          <span id="page-num" style="font-family: Georgia, serif; font-style: italic;">Book 1 · Week 1</span>
+          <button type="button" class="btn btn-outline" onclick="stepWeek(1)">Next Week →</button>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <!-- BOTTOM STUDIO DOCK -->
   <footer class="dock">
-    <!-- METRONOME -->
     <div class="dock-box">
       <div class="dock-ttl"><span>🔔 Metronome (30–200 BPM)</span><span id="bpm-txt">60 BPM</span></div>
-      <div style="display: flex; align-items: center; gap: 5px;">
-        <button type="button" class="btn btn-amber" id="metro-btn" data-action="metro">▶ Beats</button>
-        <button type="button" class="btn btn-dark" data-action="bpm-add" data-val="-5">−</button>
-        <input type="range" id="bpm-rng" min="30" max="200" value="60" style="flex: 1; accent-color: var(--amber-br);">
-        <button type="button" class="btn btn-dark" data-action="bpm-add" data-val="5">+</button>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <button type="button" class="btn btn-amber" id="metro-btn" onclick="toggleMetro()">▶ Beats</button>
+        <button type="button" class="btn btn-dark" onclick="addBpm(-5)">−</button>
+        <input type="range" id="bpm-rng" min="30" max="200" value="60" oninput="setBpm(this.value)" style="flex: 1; accent-color: var(--amber-br);">
+        <button type="button" class="btn btn-dark" onclick="addBpm(5)">+</button>
       </div>
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <div class="beat-dots" id="beat-dots"><div class="beat-dot"></div><div class="beat-dot"></div><div class="beat-dot"></div><div class="beat-dot"></div></div>
         <div style="display: flex; gap: 3px;">
-          <button type="button" class="drone-btn" data-action="bpm-set" data-val="60">60</button>
-          <button type="button" class="drone-btn" data-action="bpm-set" data-val="72">72</button>
-          <button type="button" class="drone-btn" data-action="bpm-set" data-val="80">80</button>
-          <select id="sub-sel" class="sel-dark">
-            <option value="1">♩ Quarters</option>
-            <option value="2">♫ Eighths</option>
+          <button type="button" class="drone-btn" onclick="setBpm(60)">60</button>
+          <button type="button" class="drone-btn" onclick="setBpm(72)">72</button>
+          <select id="sub-sel" class="sel-dark" onchange="updateSub()">
+            <option value="1">♩ Quarters</option><option value="2">♫ Eighths</option>
           </select>
         </div>
       </div>
     </div>
 
-    <!-- TUNER, MIC SENSITIVITY & DRONES -->
     <div class="dock-box">
-      <div class="dock-ttl"><span>🎯 Live Mic Pitch Detector & Noise Gate</span><span id="tuner-txt" style="color: var(--emerald-br);">Standby</span></div>
+      <div class="dock-ttl"><span>🎯 Live Mic Tuner & Noise Gate</span><span id="tuner-txt" style="color: var(--emerald-br);">Standby</span></div>
       <div class="tuner-bar"><div class="tuner-ndl" id="tuner-ndl"></div></div>
-      <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px;">
-        <button type="button" class="btn btn-dark" id="mic-btn" data-action="mic">🎙️ Mic Tuner</button>
-        <div style="display: flex; align-items: center; gap: 4px; font-size: 9.5px; color: #a8a29e;">
-          <span>Mic Gate:</span>
-          <input type="range" id="gate-rng" min="1" max="10" value="3" title="Increase if room is noisy" style="width: 55px; accent-color: var(--emerald-br);">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 5px;">
+        <button type="button" class="btn btn-dark" id="mic-btn" onclick="toggleMic()">🎙️ Mic Tuner</button>
+        <div style="display: flex; align-items: center; gap: 3px; font-size: 9px; color: #a8a29e;">
+          <span>Gate:</span> <input type="range" id="gate-rng" min="1" max="10" value="3" style="width: 48px; accent-color: var(--emerald-br);">
         </div>
-        <div style="display: flex; gap: 3px; align-items: center;">
-          <span style="font-size: 9.5px; color: #a8a29e;">Drone:</span>
-          <button type="button" class="drone-btn" id="dr-G3" data-action="drone" data-val="G3">G</button>
-          <button type="button" class="drone-btn" id="dr-D4" data-action="drone" data-val="D4">D</button>
-          <button type="button" class="drone-btn" id="dr-A4" data-action="drone" data-val="A4">A</button>
-          <button type="button" class="drone-btn" id="dr-E5" data-action="drone" data-val="E5">E</button>
+        <div style="display: flex; gap: 2px;">
+          <button type="button" class="drone-btn" id="dr-G3" onclick="toggleDrone('G3',196)">G</button>
+          <button type="button" class="drone-btn" id="dr-D4" onclick="toggleDrone('D4',293.66)">D</button>
+          <button type="button" class="drone-btn" id="dr-A4" onclick="toggleDrone('A4',440)">A</button>
+          <button type="button" class="drone-btn" id="dr-E5" onclick="toggleDrone('E5',659.25)">E</button>
         </div>
       </div>
     </div>
 
-    <!-- PRACTICE TIMER -->
     <div class="dock-box">
       <div class="dock-ttl"><span>⏱️ Practice & Hold Timer</span><span id="tmr-lbl">Daily 15m</span></div>
       <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-family: monospace; font-size: 20px; font-weight: 800; color: var(--emerald-br);" id="tmr-disp">15:00</span>
-        <div style="display: flex; gap: 4px;">
-          <button type="button" class="btn btn-emerald" id="tmr-btn" data-action="timer-toggle">Start</button>
-          <button type="button" class="btn btn-dark" data-action="timer-set" data-val="900">15m</button>
-          <button type="button" class="btn btn-dark" data-action="timer-set" data-val="30">30s</button>
+        <span style="font-family: monospace; font-size: 19px; font-weight: 800; color: var(--emerald-br);" id="tmr-disp">15:00</span>
+        <div style="display: flex; gap: 3px;">
+          <button type="button" class="btn btn-emerald" id="tmr-btn" onclick="toggleTimer()">Start</button>
+          <button type="button" class="btn btn-dark" onclick="setTimer(900,'Daily 15m')">15m</button>
+          <button type="button" class="btn btn-dark" onclick="setTimer(30,'30s Hold')">30s</button>
         </div>
       </div>
-      <div style="font-size: 9.5px; color: #a8a29e;">Briefs you first → Observes silently → Reviews at the end!</div>
+      <div style="font-size: 9px; color: #a8a29e;">3D Flip Book · Emotional Clara & Maestro AI Masterclass</div>
     </div>
   </footer>
 
 <script>
 // ============================================================================
-// 1. PITCHES, ENHARMONIC EQUIVALENTS & 6 VIOLIN POSITIONS
+// 1. PITCHES & CURRICULUM DATA
 // ============================================================================
 const FREQS = {
-  "G3":196.00, "G#3":207.65, "A3":220.00, "Bb3":233.08, "B3":246.94,
-  "C4":261.63, "C#4":277.18, "D4":293.66, "Eb4":311.13, "E4":329.63,
-  "F4":349.23, "F#4":369.99, "G4":392.00, "G#4":415.30, "A4":440.00, "Bb4":466.16, "B4":493.88,
-  "C5":523.25, "C#5":554.37, "D5":587.33, "Eb5":622.25, "E5":659.25,
-  "F5":698.46, "F#5":739.99, "G5":783.99, "G#5":830.61, "A5":880.00, "Bb5":932.33, "B5":987.77,
-  "C6":1046.50, "C#6":1108.73, "D6":1174.66, "Eb6":1244.51, "E6":1318.51, "F6":1396.91, "F#6":1479.98
+  "G3":196.0, "G#3":207.65, "Ab3":207.65, "A3":220.0, "A#3":233.08, "Bb3":233.08, "B3":246.94,
+  "C4":261.63, "C#4":277.18, "Db4":277.18, "D4":293.66, "D#4":311.13, "Eb4":311.13, "E4":329.63,
+  "F4":349.23, "F#4":369.99, "Gb4":369.99, "G4":392.0, "G#4":415.3, "Ab4":415.3, "A4":440.0, "A#4":466.16, "Bb4":466.16, "B4":493.88,
+  "C5":523.25, "C#5":554.37, "Db5":554.37, "D5":587.33, "D#5":622.25, "Eb5":622.25, "E5":659.25,
+  "F5":698.46, "F#5":739.99, "Gb5":739.99, "G5":783.99, "G#5":830.61, "Ab5":830.61, "A5":880.0, "A#5":932.33, "Bb5":932.33, "B5":987.77,
+  "C6":1046.5, "C#6":1108.73, "Db6":1108.73, "D6":1174.66, "Eb6":1244.51, "E6":1318.51, "F6":1396.91, "F#6":1479.98
 };
 
 const ENHARMONIC = {
@@ -492,11 +412,9 @@ const ENHARMONIC = {
 };
 function normNote(n) { return ENHARMONIC[n] || n; }
 function getNoteFreq(n) { return FREQS[normNote(n)] || 440; }
-
 function isSamePitchClass(played, target) {
   if (!played || !target) return false;
-  const pFreq = getNoteFreq(played), tFreq = getNoteFreq(target);
-  const ratio = pFreq / tFreq;
+  const ratio = getNoteFreq(played) / getNoteFreq(target);
   return Math.abs(ratio - 1.0) < 0.035 || Math.abs(ratio - 2.0) < 0.04 || Math.abs(ratio - 0.5) < 0.03;
 }
 
@@ -529,16 +447,11 @@ function findNoteInstruction(pitch) {
   for (const r of map.rows) {
     const strName = r[0];
     const idx = r.slice(1).findIndex(x => normNote(x) === np);
-    if (idx !== -1) {
-      return idx === 0 ? `Open ${strName} string` : `finger ${idx} on ${strName} string`;
-    }
+    if (idx !== -1) return idx === 0 ? `Open ${strName} string` : `finger ${idx} on ${strName} string`;
   }
   return `note ${pitch}`;
 }
 
-// ============================================================================
-// 2. BOOK 1 & BOOK 2 CURRICULUM
-// ============================================================================
 const B1_RAW = [
   [1, 1, 60, "Pizzicato on Open Strings", "Stand in playing position and pluck open strings A, E, D, G.", ["1.1|Pluck A and E|A4,A4,A4,A4,E5,E5,E5,E5,A4,E5,A4", "1.2|Pluck D and G|D4,D4,D4,D4,G3,G3,G3,G3,D4,G3,D4", "1.3|String Hop|G3,D4,A4,E5,E5,A4,D4,G3"]],
   [2, 1, 60, "Bow Hold & Rhythm with Pizzicato", "Relaxed bow hold on pencil and bow; count quarter, half and whole notes.", ["2.1|Quarter, Half & Whole Notes|A4,A4,A4,A4,E5,E5,A4", "2.2|Pluck and Rest|A4,E5,A4,E5,A4", "2.3|Rhythm on All Strings|G3,G3,D4,D4,A4,A4,E5"]],
@@ -649,7 +562,7 @@ B2_RAW.forEach(w => {
 });
 
 // ============================================================================
-// 3. STATE, AUDIO SYNTH & MALE/FEMALE AI VOICE ENGINE
+// 3. STATE & AUDIO ENGINE
 // ============================================================================
 let curBook = 1, curIdx = 0, curEx = 0, curPos = 1;
 let bpm = 60, sig = 4, sub = 1, isLoop = true, isPlaying = false, playTimers = [];
@@ -658,17 +571,15 @@ let fullExerciseNotes = ["A4","A4","E5","E5","A4"];
 let activeNotes = ["A4","A4","E5","E5","A4"];
 let audioCtx = null, droneOsc = null, activeDrone = null, mp3Rate = 1.0;
 
-// Masterclass AI State
-let trainerGender = "female"; // 'female' (Clara) or 'male' (Maestro)
-let pacingMode = "self";      // 'self' (Self-Paced Flow) or 'tempo' (Tempo Beat Flow)
+// AI Masterclass State
+let trainerGender = "female"; // 'female' or 'male'
 let aiStage = "idle";         // 'idle' | 'briefing' | 'listening' | 'review'
 let voiceOn = true;
 let aiStepIdx = 0;
-let runResults = [];          // Stores { target, played, status: 'ok'|'flat'|'sharp'|'wrong', diffHz } for each note
+let runResults = [];
 let problemNotesList = [];
 let micIgnoreUntil = 0;
 let heldNoteName = null, heldFrames = 0;
-let tempoStepSamples = [];    // Pitch samples collected during a beat in Tempo Flow mode
 
 function lockMicForMs(ms) {
   micIgnoreUntil = Math.max(micIgnoreUntil, performance.now() + ms);
@@ -691,6 +602,19 @@ function playClick(type = "down") {
   } catch(e){}
 }
 
+function playPaperTurnSound() {
+  try {
+    const ctx = getCtx(), now = ctx.currentTime;
+    const osc = ctx.createOscillator(), flt = ctx.createBiquadFilter(), g = ctx.createGain();
+    osc.type = "white"; osc.frequency.setValueAtTime(300, now);
+    flt.type = "bandpass"; flt.frequency.setValueAtTime(950, now); flt.Q.value = 1.2;
+    g.gain.setValueAtTime(0.08, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+    osc.connect(flt); flt.connect(g); g.connect(ctx.destination);
+    osc.start(now); osc.stop(now + 0.18);
+  } catch(e){}
+}
+
 function playViolin(pitch, dur = 0.45) {
   const freq = getNoteFreq(pitch);
   if (!freq) return;
@@ -708,7 +632,6 @@ function playViolin(pitch, dur = 0.45) {
   } catch(e){}
 }
 
-// Pick best Male or Female SpeechSynthesis Voice
 let availableVoices = [];
 if ("speechSynthesis" in window) {
   const loadVoices = () => { availableVoices = window.speechSynthesis.getVoices(); };
@@ -717,27 +640,22 @@ if ("speechSynthesis" in window) {
 }
 
 function pickGenderVoice(gender) {
-  if (!availableVoices.length && "speechSynthesis" in window) {
-    availableVoices = window.speechSynthesis.getVoices();
-  }
-  const enVoices = availableVoices.filter(v => v.lang && v.lang.toLowerCase().startsWith("en"));
-  const pool = enVoices.length ? enVoices : availableVoices;
-  if (!pool.length) return null;
+  if (!availableVoices.length && "speechSynthesis" in window) availableVoices = window.speechSynthesis.getVoices();
+  const pool = availableVoices.filter(v => v.lang && v.lang.toLowerCase().startsWith("en"));
+  const voices = pool.length ? pool : availableVoices;
+  if (!voices.length) return null;
 
-  const femaleKeywords = ["female", "zira", "samantha", "victoria", "karen", "moira", "tessa", "aria", "jenny", "sonia", "susan", "hazel", "clara", "google uk english female", "google us english"];
-  const maleKeywords = ["male", "david", "mark", "daniel", "alex", "fred", "george", "guy", "ryan", "christopher", "eric", "google uk english male"];
-
-  const targets = gender === "female" ? femaleKeywords : maleKeywords;
+  const targets = gender === "female" ? ["female", "zira", "samantha", "aria", "jenny", "sonia", "susan", "clara"] : ["male", "david", "mark", "daniel", "alex", "ryan", "maestro"];
   for (const kw of targets) {
-    const found = pool.find(v => v.name.toLowerCase().includes(kw));
+    const found = voices.find(v => v.name.toLowerCase().includes(kw));
     if (found) return found;
   }
-  return pool[0];
+  return voices[0];
 }
 
 function speakAI(htmlText, onDoneCallback = null) {
-  const prefix = trainerGender === "female" ? "👩 <strong>Clara:</strong> " : "👨 <strong>Maestro:</strong> ";
-  document.getElementById("ai-speech-txt").innerHTML = prefix + htmlText;
+  const nameStr = trainerGender === "female" ? "👩 <strong>Clara:</strong> " : "👨 <strong>Maestro:</strong> ";
+  document.getElementById("ai-speech-txt").innerHTML = nameStr + htmlText;
 
   if (!voiceOn || !("speechSynthesis" in window)) {
     if (onDoneCallback) setTimeout(onDoneCallback, 600);
@@ -749,7 +667,7 @@ function speakAI(htmlText, onDoneCallback = null) {
     const u = new SpeechSynthesisUtterance(cleanText);
     const chosenVoice = pickGenderVoice(trainerGender);
     if (chosenVoice) u.voice = chosenVoice;
-    u.pitch = trainerGender === "female" ? 1.12 : 0.88;
+    u.pitch = trainerGender === "female" ? 1.1 : 0.86;
     u.rate = 1.03;
 
     lockMicForMs(3500);
@@ -769,26 +687,33 @@ function speakAI(htmlText, onDoneCallback = null) {
 }
 
 // ============================================================================
-// 4. 3-STAGE MASTERCLASS WORKFLOW (1. BRIEF -> 2. SILENT PLAY -> 3. REVIEW)
+// 4. 3D FLIP-BOOK & 3-STAGE MASTERCLASS WORKFLOW
 // ============================================================================
-function startAiMasterclass() {
+function flipPage(delta) {
+  playPaperTurnSound();
+  const spread = document.getElementById("book-spread-elem");
+  spread.style.transform = delta > 0 ? "rotateY(-12deg) scale(0.98)" : "rotateY(12deg) scale(0.98)";
+  setTimeout(() => {
+    spread.style.transform = "rotateY(0deg) scale(1)";
+    stepWeek(delta);
+  }, 300);
+}
+
+function startMasterclass() {
   stopPlayAlong();
   mp3Player.pause();
 
-  // If already running, stop it
   if (aiStage === "briefing" || aiStage === "listening") {
     aiStage = "idle";
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-    document.getElementById("ai-mode-btn").textContent = "🎓 Start AI Masterclass (Brief → Play → Review)";
-    document.getElementById("ai-score-lbl").textContent = "Stage: Standby";
-    document.getElementById("ai-console").className = "ai-trainer-box";
+    document.getElementById("masterclass-btn").textContent = "🎓 Start AI Masterclass (Brief → Play → Review)";
+    document.getElementById("ai-stage-lbl").textContent = "Stage: Standby";
+    document.getElementById("ai-console").className = "ai-console";
     return;
   }
 
-  // Ensure microphone is turned on for live listening
   if (!micStream) toggleMic();
 
-  // Reset visual note states
   aiStepIdx = 0;
   runResults = [];
   heldFrames = 0;
@@ -796,92 +721,35 @@ function startAiMasterclass() {
   moveCursorToIdx(0, false);
 
   aiStage = "briefing";
-  document.getElementById("ai-mode-btn").textContent = "⏹ Stop Masterclass";
-  document.getElementById("ai-score-lbl").textContent = "Stage 1/3: Briefing...";
-  document.getElementById("ai-console").className = "ai-trainer-box briefing";
-  document.getElementById("obs-hold-bar").style.width = "0%";
-  document.getElementById("obs-hold-pct").textContent = "Line Progress: 0%";
+  document.getElementById("masterclass-btn").textContent = "⏹ Stop Masterclass";
+  document.getElementById("ai-stage-lbl").textContent = "Stage 1/3: Briefing";
+  document.getElementById("ai-console").className = "ai-console briefing";
 
   const w = BOOK_DATA[curBook][curIdx];
   const exTitle = document.getElementById("ex-title").textContent;
   const posName = POS_DATA[curPos].name;
   const firstNote = activeNotes[0];
   const lastNote = activeNotes[activeNotes.length - 1];
-  const firstWhere = findNoteInstruction(firstNote);
 
-  const briefMsg = `Let's play <strong>${exTitle}</strong> in <strong>${posName}</strong>. Focus on: ${w.goal} Start on <strong>${firstNote}</strong> (${firstWhere}) and play all ${activeNotes.length} notes through to <strong>${lastNote}</strong>. I will listen quietly without interrupting and give you feedback at the end. Begin when ready!`;
+  const briefMsg = `Welcome to this Masterclass session! We are studying <strong>${exTitle}</strong> in <strong>${posName}</strong>. Focus on: ${w.goal} Start on <strong>${firstNote}</strong> and play all ${activeNotes.length} notes through to <strong>${lastNote}</strong>. I will listen quietly without interrupting and review your performance at the end. Ready? Let's begin!`;
 
   speakAI(briefMsg, () => {
     if (aiStage !== "briefing") return;
-    beginSilentObservationStage();
+    beginListeningStage();
   });
 }
 
-function beginSilentObservationStage() {
+function beginListeningStage() {
   aiStage = "listening";
   aiStepIdx = 0;
   runResults = [];
   heldFrames = 0;
-  document.getElementById("ai-console").className = "ai-trainer-box listening";
+  document.getElementById("ai-console").className = "ai-console listening";
+  document.getElementById("ai-stage-lbl").textContent = `Stage 2/3: Listening (1/${activeNotes.length})`;
+  document.getElementById("ai-speech-txt").innerHTML = `🤫 <strong>Listening Silently (Masterclass Mode):</strong> Play each note on your violin (or tap the fingerboard). The cursor advances automatically without voice interruption until you finish all ${activeNotes.length} notes!`;
   moveCursorToIdx(0, false);
-
-  if (pacingMode === "self") {
-    document.getElementById("ai-score-lbl").textContent = `Stage 2/3: Listening (Note 1/${activeNotes.length})`;
-    document.getElementById("ai-speech-txt").innerHTML = `🤫 <strong>Listening Silently (Self-Paced Flow):</strong> Play each note steadily on your violin (or tap the fingerboard below). The cursor will advance automatically without voice interruption until you finish all ${activeNotes.length} notes!`;
-  } else {
-    document.getElementById("ai-score-lbl").textContent = `Stage 2/3: Tempo Count-In (${bpm} BPM)`;
-    document.getElementById("ai-speech-txt").innerHTML = `🤫 <strong>Listening Silently (Tempo Beat Flow at ${bpm} BPM):</strong> Get your bow ready for the ${sig}-beat count-in, then play along with the moving cursor!`;
-    runTempoObservationLoop();
-  }
 }
 
-function runTempoObservationLoop() {
-  const beatMs = (60 / bpm) * 1000;
-  const cnt = document.getElementById("count-lbl");
-  cnt.style.display = "inline-block";
-
-  for (let b = 0; b < sig; b++) {
-    playTimers.push(setTimeout(() => {
-      if (aiStage !== "listening") return;
-      playClick(b === 0 ? "down" : "beat");
-      cnt.textContent = `Count: ${b + 1}`;
-    }, b * beatMs));
-  }
-
-  let elapsed = sig * beatMs;
-  activeNotes.forEach((targetPt, idx) => {
-    // Start of beat: move cursor to note idx
-    playTimers.push(setTimeout(() => {
-      if (aiStage !== "listening") return;
-      cnt.style.display = "none";
-      aiStepIdx = idx;
-      tempoStepSamples = [];
-      playClick(idx % sig === 0 ? "down" : "beat");
-      moveCursorToIdx(idx, false);
-      document.getElementById("ai-score-lbl").textContent = `Stage 2/3: Observing Note ${idx + 1}/${activeNotes.length}`;
-    }, elapsed));
-
-    // End of beat: grade what was played during this beat silently
-    playTimers.push(setTimeout(() => {
-      if (aiStage !== "listening") return;
-      if (tempoStepSamples.length === 0) {
-        recordSilentNoteResult(idx, targetPt, "Silence", 0);
-      } else {
-        // Pick most frequent note heard during this beat
-        const sample = tempoStepSamples[Math.floor(tempoStepSamples.length / 2)];
-        recordSilentNoteResult(idx, targetPt, sample.note, sample.diff);
-      }
-    }, elapsed + beatMs - 40));
-
-    elapsed += beatMs;
-  });
-
-  playTimers.push(setTimeout(() => {
-    if (aiStage === "listening") finishAndDeliverReview();
-  }, elapsed + 80));
-}
-
-// Records a note silently during Stage 2 (Colors the note head, advances cursor, NO speech interruption!)
 function recordSilentNoteResult(idx, targetPt, playedPt, diffHz) {
   const noteEl = document.getElementById(`nh-${idx}`);
   let status = "ok";
@@ -899,26 +767,18 @@ function recordSilentNoteResult(idx, targetPt, playedPt, diffHz) {
 
   runResults[idx] = { idx: idx + 1, target: targetPt, played: playedPt, status, diffHz };
 
-  const pct = Math.round(((idx + 1) / activeNotes.length) * 100);
-  document.getElementById("obs-hold-bar").style.width = `${pct}%`;
-  document.getElementById("obs-hold-pct").textContent = `Line Progress: ${pct}%`;
-
-  // In Self-Paced mode, advance immediately to the next note or finish at the end of the line
-  if (pacingMode === "self") {
-    if (idx < activeNotes.length - 1) {
-      aiStepIdx = idx + 1;
-      moveCursorToIdx(aiStepIdx, false);
-      document.getElementById("ai-score-lbl").textContent = `Stage 2/3: Listening (Note ${aiStepIdx + 1}/${activeNotes.length})`;
-    } else {
-      finishAndDeliverReview();
-    }
+  if (idx < activeNotes.length - 1) {
+    aiStepIdx = idx + 1;
+    moveCursorToIdx(aiStepIdx, false);
+    document.getElementById("ai-stage-lbl").textContent = `Stage 2/3: Listening (${aiStepIdx + 1}/${activeNotes.length})`;
+  } else {
+    finishAndDeliverReview();
   }
 }
 
-// Stage 3: End-of-Line Comprehensive AI Teacher Review!
 function finishAndDeliverReview() {
   aiStage = "review";
-  document.getElementById("ai-mode-btn").textContent = "🎓 Start AI Masterclass Again";
+  document.getElementById("masterclass-btn").textContent = "🎓 Start AI Masterclass Again";
 
   const total = activeNotes.length;
   const okNotes = runResults.filter(r => r && r.status === "ok");
@@ -926,57 +786,109 @@ function finishAndDeliverReview() {
   const wrongNotes = runResults.filter(r => r && r.status === "wrong");
 
   const scorePct = Math.round(((okNotes.length + flatSharpNotes.length * 0.5) / Math.max(1, total)) * 100);
-  document.getElementById("ai-score-lbl").textContent = `Stage 3/3 Review · Score: ${scorePct}%`;
+  document.getElementById("ai-stage-lbl").textContent = `Stage 3/3 Review · ${scorePct}%`;
 
-  // Collect problem notes for the 1-click "Practice Problem Notes Only" button
   problemNotesList = [];
-  runResults.forEach(r => {
-    if (r && r.status !== "ok") problemNotesList.push(r.target);
-  });
+  runResults.forEach(r => { if (r && r.status !== "ok") problemNotesList.push(r.target); });
 
   const fixBtn = document.getElementById("fix-btn");
   if (problemNotesList.length > 0) {
     fixBtn.style.display = "inline-flex";
-    fixBtn.textContent = `🔧 Practice ${problemNotesList.length} Problem Note${problemNotesList.length > 1 ? 's' : ''} Only`;
+    fixBtn.textContent = `🔧 Practice ${problemNotesList.length} Problem Note${problemNotesList.length > 1 ? 's' : ''}`;
   } else {
     fixBtn.style.display = "none";
   }
 
   if (wrongNotes.length === 0 && flatSharpNotes.length === 0) {
-    document.getElementById("ai-console").className = "ai-trainer-box review-good";
-    speakAI(`🌟 <strong>Bravo! 100% Accuracy!</strong> All ${total} notes were spot on and in tune. Your hand frame in ${POS_DATA[curPos].name} was rock solid. Try stepping the tempo up by 5 BPM or move to the next exercise!`);
+    document.getElementById("ai-console").className = "ai-console good";
+    speakAI(`🌟 <strong>Bravo! 100% Accuracy!</strong> Every single one of the ${total} notes was spot on. Your intonation in ${POS_DATA[curPos].name} was pristine. Excellent work!`);
     return;
   }
 
-  document.getElementById("ai-console").className = "ai-trainer-box review-fix";
-  let feedbackParts = [`Good run! You scored <strong>${scorePct}%</strong> (${okNotes.length} of ${total} notes clean).`];
-
+  document.getElementById("ai-console").className = "ai-console fix";
+  let feedback = [`Good run! You scored <strong>${scorePct}%</strong> (${okNotes.length} of ${total} notes clean).`];
   if (wrongNotes.length > 0) {
-    const firstErr = wrongNotes[0];
-    const where = findNoteInstruction(firstErr.target);
-    if (firstErr.played === "Silence") {
-      feedbackParts.push(`On <strong>Note ${firstErr.idx} (${firstErr.target})</strong>, I didn't hear a clear note—make sure to place ${where}.`);
-    } else {
-      feedbackParts.push(`Watch out for <strong>Note ${firstErr.idx}</strong>: you played <strong>${firstErr.played}</strong> instead of <strong>${firstErr.target}</strong> (${where}).`);
-    }
-    if (wrongNotes.length > 1) {
-      const others = wrongNotes.slice(1, 3).map(x => `Note ${x.idx} (${x.target})`).join(" and ");
-      feedbackParts.push(`Also check ${others}.`);
-    }
+    const err = wrongNotes[0];
+    feedback.push(`On <strong>Note ${err.idx}</strong>, I heard <strong>${err.played}</strong> instead of <strong>${err.target}</strong> (${findNoteInstruction(err.target)}).`);
   }
-
   if (flatSharpNotes.length > 0) {
     const fs = flatSharpNotes[0];
-    const dir = fs.status === "flat" ? "slightly flat—slide your finger a tiny bit higher toward the bridge" : "slightly sharp—roll your finger slightly back toward the scroll";
-    feedbackParts.push(`For intonation, <strong>Note ${fs.idx} (${fs.target})</strong> was ${dir}.`);
+    feedback.push(`For intonation, <strong>Note ${fs.idx} (${fs.target})</strong> was slightly ${fs.status}.`);
   }
+  feedback.push(`Click <strong>"🔧 Practice Problem Notes"</strong> to isolate those tricky spots!`);
+  speakAI(feedback.join(" "));
+}
 
-  feedbackParts.push(`Click <strong>"🔧 Practice Problem Notes Only"</strong> above to isolate those spots, or start the Masterclass again!`);
-  speakAI(feedbackParts.join(" "));
+function practiceMistakesOnly() {
+  if (problemNotesList.length > 0) {
+    activeNotes = problemNotesList.slice();
+    document.getElementById("reset-notes-btn").style.display = "inline-flex";
+    document.getElementById("fix-btn").style.display = "none";
+    drawStaff();
+    startMasterclass();
+  }
+}
+
+function resetFullExercise() {
+  const w = BOOK_DATA[curBook][curIdx];
+  const ex = w.exercises[curEx];
+  fullExerciseNotes = ex.notes.slice();
+  activeNotes = fullExerciseNotes.slice();
+  document.getElementById("reset-notes-btn").style.display = "none";
+  drawStaff();
+  moveCursorToIdx(0, false);
 }
 
 // ============================================================================
-// 5. STUDIO-GRADE VIOLIN PITCH DETECTOR (NSDF)
+// 5. AI Q&A BRAIN (VOICE + TEXT STUDENT QUERIES)
+// ============================================================================
+function askTeacherQ() {
+  const qBox = document.getElementById("qa-txt");
+  const q = qBox.value.trim();
+  if (!q) return;
+  qBox.value = "";
+  processStudentQuestion(q);
+}
+
+function toggleVoiceQ() {
+  if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+    speakAI("Speech recognition is not supported in this browser. Please type your question in the text box.");
+    return;
+  }
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const rec = new SpeechRec();
+  speakAI("Listening... Speak your question now.");
+  rec.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+    document.getElementById("qa-txt").value = transcript;
+    processStudentQuestion(transcript);
+  };
+  rec.onerror = () => { speakAI("I didn't catch that. Please try typing your question."); };
+  rec.start();
+}
+
+function processStudentQuestion(q) {
+  const lower = q.toLowerCase();
+  let ans = "";
+  if (lower.includes("scratchy") || lower.includes("tone") || lower.includes("sound")) {
+    ans = "A scratchy bow sound usually means your bow is too close to the bridge or you're pressing too hard. Try the 'Bow Highway' drill: keep your bow strictly in the lane halfway between the bridge and fingerboard with a soft, relaxed thumb!";
+  } else if (lower.includes("3rd pos") || lower.includes("third position") || lower.includes("shift")) {
+    ans = "To find 3rd position, play D on the A string with your 3rd finger in 1st position, then slide your whole hand and thumb up together so your 1st finger takes over that exact same D! Let's practise shifting slowly.";
+    setPos(3);
+  } else if (lower.includes("vibrato")) {
+    ans = "For vibrato, start without your violin: wave your forearm from the wrist like polishing a window. Then, place your 2nd finger in 3rd position and gently roll your fingertip toward the scroll and back without losing pitch contact.";
+    setPos(3);
+  } else if (lower.includes("play") || lower.includes("demo") || lower.includes("hear")) {
+    ans = "Here is the reference demonstration for this exercise. Listen closely to the tone and bow speed!";
+    togglePlayAlong();
+  } else {
+    ans = `That's a fantastic question about violin technique! For "${q}", always ensure your left wrist remains straight and your posture relaxed. Practise slowly with a drone or tuner for intonation.`;
+  }
+  speakAI(ans);
+}
+
+// ============================================================================
+// 6. STUDIO-GRADE VIOLIN PITCH DETECTOR (NSDF)
 // ============================================================================
 function detectViolinPitchNSDF(buf, sampleRate) {
   let rms = 0;
@@ -1007,11 +919,7 @@ function detectViolinPitchNSDF(buf, sampleRate) {
   let bestTau = -1, maxVal = 0;
   for (let t = tau; t < maxLag - 1; t++) {
     if (nsdf[t] > nsdf[t - 1] && nsdf[t] >= nsdf[t + 1] && nsdf[t] > 0.62) {
-      if (nsdf[t] > maxVal) {
-        maxVal = nsdf[t];
-        bestTau = t;
-        if (nsdf[t] > 0.82) break;
-      }
+      if (nsdf[t] > maxVal) { maxVal = nsdf[t]; bestTau = t; if (nsdf[t] > 0.82) break; }
     }
   }
   if (bestTau === -1) return { freq: -1, rms };
@@ -1019,15 +927,13 @@ function detectViolinPitchNSDF(buf, sampleRate) {
   const y1 = nsdf[bestTau - 1], y2 = nsdf[bestTau], y3 = nsdf[bestTau + 1];
   const denom = y1 + y3 - 2 * y2;
   const delta = denom !== 0 ? (y1 - y3) / (2 * denom) : 0;
-  const refinedTau = bestTau + (Math.abs(delta) < 1 ? delta : 0);
-
-  return { freq: sampleRate / refinedTau, clarity: maxVal, rms };
+  return { freq: sampleRate / (bestTau + delta), clarity: maxVal, rms };
 }
 
 // ============================================================================
-// 6. BOOK, WEEK & EXERCISE RENDERING
+// 7. BOOK, WEEK & EXERCISE RENDERING
 // ============================================================================
-function selectBook(bNum) {
+function switchBook(bNum) {
   curBook = bNum;
   document.getElementById("btn-book1").classList.toggle("active", bNum === 1);
   document.getElementById("btn-book2").classList.toggle("active", bNum === 2);
@@ -1042,7 +948,7 @@ function selectWeek(idx) {
   curEx = 0;
 
   document.getElementById("week-tabs").innerHTML = list.map((item, i) => `
-    <button type="button" class="week-btn ${i === curIdx ? 'active' : ''}" data-action="week" data-val="${i}">${item.tab}</button>
+    <button type="button" class="week-btn ${i === curIdx ? 'active' : ''}" onclick="selectWeek(${i})">${item.tab}</button>
   `).join("");
 
   setBpm(w.bpm);
@@ -1060,7 +966,7 @@ function selectWeek(idx) {
   updChecks();
 
   document.getElementById("ex-tabs").innerHTML = w.exercises.map((ex, i) => `
-    <button type="button" class="ex-tab ${i === 0 ? 'active' : ''}" data-action="ex" data-val="${i}">${ex.id}</button>
+    <button type="button" class="ex-tab ${i === 0 ? 'active' : ''}" onclick="loadEx(${i})">${ex.id}</button>
   `).join("");
 
   loadEx(0);
@@ -1076,7 +982,7 @@ function updChecks() {
 function loadEx(eIdx) {
   stopPlayAlong();
   aiStage = "idle";
-  document.getElementById("ai-mode-btn").textContent = "🎓 Start AI Masterclass (Brief → Play → Review)";
+  document.getElementById("masterclass-btn").textContent = "🎓 Start AI Masterclass (Brief → Play → Review)";
   document.getElementById("fix-btn").style.display = "none";
   document.getElementById("reset-notes-btn").style.display = "none";
   const w = BOOK_DATA[curBook][curIdx];
@@ -1086,8 +992,8 @@ function loadEx(eIdx) {
   fullExerciseNotes = ex.notes.slice();
   activeNotes = ex.notes.slice();
   aiStepIdx = 0; runResults = [];
-  document.getElementById("ai-console").className = "ai-trainer-box";
-  document.getElementById("ai-score-lbl").textContent = "Stage: Standby";
+  document.getElementById("ai-console").className = "ai-console";
+  document.getElementById("ai-stage-lbl").textContent = "Stage: Standby";
   document.getElementById("ex-title").textContent = ex.title;
   setMp3Track(ex.mp3);
   drawStaff();
@@ -1103,7 +1009,7 @@ function setMp3Track(path) {
 }
 
 // ============================================================================
-// 7. FINGERBOARD & SVG SHEET MUSIC
+// 8. FINGERBOARD & SHEET MUSIC
 // ============================================================================
 function setPos(p) {
   curPos = p;
@@ -1119,24 +1025,27 @@ function setPos(p) {
     <div class="fb-row">
       <span class="fb-str">${r[0]}</span>
       ${r.slice(1).map((nt, idx) => `
-        <button type="button" class="fb-cell" id="cell-${normNote(nt)}" data-action="note" data-val="${nt}">${idx === 0 ? '0 ' : idx + ' '}(${nt})</button>
+        <button type="button" class="fb-cell" id="cell-${normNote(nt)}" onclick="clickFingerboardNote('${nt}')">${idx === 0 ? '0 ' : idx + ' '}(${nt})</button>
       `).join("")}
     </div>
   `).join("");
 }
 
-function highlightNote(pitch, playSound = true) {
-  if (playSound) playViolin(pitch, 0.45);
+function clickFingerboardNote(pitch) {
+  playViolin(pitch, 0.45);
   document.querySelectorAll(".fb-cell").forEach(c => c.classList.remove("active"));
   const target = document.getElementById(`cell-${normNote(pitch)}`);
   if (target) target.classList.add("active");
-  document.getElementById("pitch-badge").textContent = `Target Pitch: ${pitch} (${Math.round(getNoteFreq(pitch))} Hz)`;
-  document.getElementById("str-lbl").textContent = `Target: ${pitch}`;
+  document.getElementById("pitch-badge").textContent = `Pitch: ${pitch} (${Math.round(getNoteFreq(pitch))} Hz)`;
+
+  if (aiStage === "listening") {
+    recordSilentNoteResult(aiStepIdx, activeNotes[aiStepIdx], pitch, 0);
+  }
 }
 
 function drawStaff() {
   const svg = document.getElementById("sheet-svg");
-  let html = `<rect id="cursor-bar" x="82" y="14" width="18" height="122" rx="4" fill="rgba(217,119,6,0.25)" style="display:none;" />`;
+  let html = `<rect id="cursor-bar" x="82" y="14" width="18" height="120" rx="4" fill="rgba(217,119,6,0.25)" style="display:none;" />`;
   [45,60,75,90,105].forEach(y => { html += `<line x1="15" y1="${y}" x2="685" y2="${y}" stroke="#57534e" stroke-width="1.2"/>`; });
   html += `<text x="20" y="94" font-size="46" font-family="serif" fill="#1c1917">𝄞</text>
            <text x="54" y="72" font-size="19" font-weight="bold" font-family="serif" fill="#1c1917">${sig}</text>
@@ -1151,11 +1060,11 @@ function drawStaff() {
     if (y <= 30) html += `<line x1="${x-9}" y1="30" x2="${x+9}" y2="30" stroke="#292524" stroke-width="1.2"/>`;
     if (y <= 18) html += `<line x1="${x-9}" y1="18" x2="${x+9}" y2="18" stroke="#292524" stroke-width="1.2"/>`;
 
-    html += `<g data-action="staff-note" data-val="${idx}" style="cursor:pointer;">
+    html += `<g onclick="clickStaffIdx(${idx})" style="cursor:pointer;">
       <text x="${x}" y="24" font-size="10" font-weight="bold" text-anchor="middle" fill="#78350f">${bowSym}</text>
-      <ellipse id="nh-${idx}" class="note-head" cx="${x}" cy="${y}" rx="6.5" ry="4.8" transform="rotate(-18 ${x} ${y})" fill="#1c1917" stroke="#1c1917" stroke-width="1.5"/>
-      <line x1="${x+5.5}" y1="${y}" x2="${x+5.5}" y2="${y-24}" stroke="#1c1917" stroke-width="1.5"/>
-      <text x="${x}" y="145" font-size="9.5" font-family="monospace" text-anchor="middle" fill="#78716c">${pt}</text>
+      <ellipse id="nh-${idx}" class="note-head" cx="${x}" cy="${y}" rx="6" ry="4.5" transform="rotate(-18 ${x} ${y})" fill="#1c1917" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="${x+5}" y1="${y}" x2="${x+5}" y2="${y-24}" stroke="#1c1917" stroke-width="1.5"/>
+      <text x="${x}" y="145" font-size="9" font-family="monospace" text-anchor="middle" fill="#78716c">${pt}</text>
     </g>`;
 
     if ((idx + 1) % sig === 0 && idx < activeNotes.length - 1) {
@@ -1167,10 +1076,19 @@ function drawStaff() {
   svg.innerHTML = html;
 }
 
+function clickStaffIdx(idx) {
+  aiStepIdx = idx;
+  moveCursorToIdx(idx, true);
+}
+
 function moveCursorToIdx(idx, playSynth = true) {
   const pt = activeNotes[idx];
   if (!pt) return;
-  document.querySelectorAll(".note-head").forEach(el => el.classList.remove("note-on"));
+  document.querySelectorAll(".note-head").forEach(el => {
+    if (!el.classList.contains("note-ok") && !el.classList.contains("note-err") && !el.classList.contains("note-flat")) {
+      el.classList.remove("note-on");
+    }
+  });
   const el = document.getElementById(`nh-${idx}`);
   if (el && !el.classList.contains("note-ok") && !el.classList.contains("note-err") && !el.classList.contains("note-flat")) {
     el.classList.add("note-on");
@@ -1184,7 +1102,7 @@ function moveCursorToIdx(idx, playSynth = true) {
   }
   document.getElementById("bow-fill").style.width = idx % 2 === 0 ? "85%" : "20%";
   document.getElementById("bow-txt").textContent = idx % 2 === 0 ? "Bow: ∏ Down" : "Bow: V Up";
-  highlightNote(pt, playSynth);
+  if (playSynth) playViolin(pt, 0.45);
 }
 
 const mp3Player = document.getElementById("mp3-player");
@@ -1195,24 +1113,22 @@ mp3Player.addEventListener("timeupdate", () => {
 });
 
 // ============================================================================
-// 8. REFERENCE AUDIO PLAY-ALONG & METRONOME
+// 9. REFERENCE AUDIO PLAY-ALONG & METRONOME
 // ============================================================================
 function togglePlayAlong() { isPlaying ? stopPlayAlong() : startPlayAlong(); }
-
 function stopPlayAlong() {
   isPlaying = false;
   playTimers.forEach(t => clearTimeout(t)); playTimers = [];
   document.getElementById("play-ico").textContent = "▶";
-  document.getElementById("play-txt").textContent = "Hear Reference Audio";
+  document.getElementById("play-txt").textContent = "Reference Synth";
   document.getElementById("count-lbl").style.display = "none";
 }
-
 function startPlayAlong() {
   stopPlayAlong();
   mp3Player.pause();
   isPlaying = true;
   document.getElementById("play-ico").textContent = "⏹";
-  document.getElementById("play-txt").textContent = "Stop Audio";
+  document.getElementById("play-txt").textContent = "Stop Synth";
   const beatMs = (60 / bpm) * 1000;
   const cnt = document.getElementById("count-lbl");
   cnt.style.display = "inline-block";
@@ -1239,14 +1155,13 @@ function setBpm(v) {
   document.getElementById("bpm-badge").textContent = `♩ = ${bpm} BPM`;
   if (isMetro) { clearInterval(metroTimer); runMetro(); }
 }
-
+function addBpm(d) { setBpm(bpm + d); }
 function toggleMetro() {
   isMetro = !isMetro;
   document.getElementById("metro-btn").textContent = isMetro ? "⏹ Stop" : "▶ Beats";
   if (isMetro) { metroStep = 0; runMetro(); }
   else { clearInterval(metroTimer); document.querySelectorAll(".beat-dot").forEach(d => d.className = "beat-dot"); }
 }
-
 function runMetro() {
   const ms = ((60 / bpm) * 1000) / sub;
   const tick = () => {
@@ -1259,9 +1174,30 @@ function runMetro() {
   };
   tick(); metroTimer = setInterval(tick, ms);
 }
+function updateSub() {
+  sub = parseInt(document.getElementById("sub-sel").value, 10) || 1;
+  if (isMetro) { clearInterval(metroTimer); runMetro(); }
+}
+
+function setAudioRate(r) {
+  mp3Rate = r;
+  mp3Player.playbackRate = r;
+  mp3Player.preservesPitch = true;
+  [75,90,100].forEach(v => document.getElementById(`r-${v}`).classList.toggle("active", Math.round(r*100) === v));
+}
+function changeSig(val) {
+  sig = parseInt(val, 10) || 4;
+  let h = ""; for (let i = 0; i < sig; i++) h += `<div class="beat-dot"></div>`;
+  document.getElementById("beat-dots").innerHTML = h;
+  drawStaff();
+}
+function setTimer(s, lbl) {
+  document.getElementById("tmr-disp").textContent = fmtT(s);
+  document.getElementById("tmr-lbl").textContent = lbl;
+}
 
 // ============================================================================
-// 9. SCALES, PIECES & MICROPHONE LISTENER
+// 10. SCALES & MICROPHONE LISTENER
 // ============================================================================
 const SCALE_NOTES = {
   "C": ["C4","D4","E4","F4","G4","A4","B4","C5","D5","E5","F5","G5","A5","B5","C6"],
@@ -1306,56 +1242,26 @@ document.getElementById("piece-picker").addEventListener("change", function() {
   drawStaff(); moveCursorToIdx(0, true);
 });
 
-document.getElementById("sig-sel").addEventListener("change", function() {
-  sig = parseInt(this.value, 10) || 4;
-  let h = ""; for (let i = 0; i < sig; i++) h += `<div class="beat-dot"></div>`;
-  document.getElementById("beat-dots").innerHTML = h;
-  drawStaff();
-});
-document.getElementById("sub-sel").addEventListener("change", function() {
-  sub = parseInt(this.value, 10) || 1;
-  if (isMetro) { clearInterval(metroTimer); runMetro(); }
-});
-document.getElementById("bpm-rng").addEventListener("input", function() { setBpm(this.value); });
-
-let tmrSec = 900, tmrInt = null;
-function fmtT(s) { return `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`; }
-
 let micStream = null, micInt = null;
 async function toggleMic() {
   const btn = document.getElementById("mic-btn"), txt = document.getElementById("tuner-txt"), ndl = document.getElementById("tuner-ndl");
-  const heardEl = document.getElementById("obs-heard-txt");
-
   if (micStream) {
     micStream.getTracks().forEach(t => t.stop()); micStream = null; clearInterval(micInt);
-    btn.textContent = "🎙️ Mic Tuner"; txt.textContent = "Standby"; ndl.style.left = "50%";
-    heardEl.textContent = "👂 Mic: Off"; return;
+    btn.textContent = "🎙️ Mic Tuner"; txt.textContent = "Standby"; ndl.style.left = "50%"; return;
   }
   try {
     const ctx = getCtx();
-    micStream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: false, autoGainControl: false }
-    });
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: false } });
     const src = ctx.createMediaStreamSource(micStream), an = ctx.createAnalyser();
     an.fftSize = 2048; src.connect(an);
     btn.textContent = "⏹ Stop Mic"; txt.textContent = "Listening...";
     const buf = new Float32Array(an.fftSize);
 
     micInt = setInterval(() => {
-      if (performance.now() < micIgnoreUntil || ("speechSynthesis" in window && window.speechSynthesis.speaking)) {
-        heardEl.textContent = "🔇 Mic Paused (AI Speaking)";
-        heldFrames = 0;
-        return;
-      }
-
+      if (performance.now() < micIgnoreUntil || ("speechSynthesis" in window && window.speechSynthesis.speaking)) return;
       an.getFloatTimeDomainData(buf);
       const res = detectViolinPitchNSDF(buf, ctx.sampleRate);
-
-      if (res.freq === -1) {
-        heardEl.textContent = aiStage === "listening" ? `👂 Play Note ${aiStepIdx + 1} (${activeNotes[aiStepIdx]})...` : "👂 Waiting for violin...";
-        heldFrames = Math.max(0, heldFrames - 1);
-        return;
-      }
+      if (res.freq === -1) return;
 
       let best = "A4", bf = 440, md = 9999;
       for (const [k, f] of Object.entries(FREQS)) {
@@ -1363,34 +1269,33 @@ async function toggleMic() {
       }
       const diff = res.freq - bf;
       ndl.style.left = `${Math.max(8, Math.min(92, 50 + diff * 3))}%`;
-      txt.textContent = `${best} (${Math.round(res.freq)} Hz) ${Math.abs(diff) < 3.5 ? '🟢' : diff < 0 ? '🔻Flat' : '🔺Sharp'}`;
-      heardEl.textContent = `👂 Heard: ${best} (${Math.round(res.freq)} Hz)`;
+      txt.textContent = `${best} (${Math.round(res.freq)} Hz)`;
 
       if (aiStage === "listening") {
-        if (pacingMode === "tempo") {
-          tempoStepSamples.push({ note: best, diff });
-        } else {
-          // Self-Paced Flow: require 3 steady frames (~360ms) on a note, then record silently & move cursor!
-          if (best === heldNoteName) heldFrames++;
-          else { heldNoteName = best; heldFrames = 1; }
+        if (best === heldNoteName) heldFrames++;
+        else { heldNoteName = best; heldFrames = 1; }
 
-          const targetPt = activeNotes[aiStepIdx];
-          const needed = isSamePitchClass(best, targetPt) ? 3 : 4;
-          if (heldFrames >= needed) {
-            heldFrames = 0;
-            lockMicForMs(320); // Brief pause so bow change doesn't double-trigger next note
-            recordSilentNoteResult(aiStepIdx, targetPt, best, diff);
-          }
+        const targetPt = activeNotes[aiStepIdx];
+        if (heldFrames >= 3) {
+          heldFrames = 0;
+          lockMicForMs(350);
+          recordSilentNoteResult(aiStepIdx, targetPt, best, diff);
         }
       }
-    }, 120);
+    }, 140);
   } catch (e) { txt.textContent = "Allow Mic"; }
 }
 
+function setTrainer(gender) {
+  trainerGender = gender;
+  document.getElementById("tr-fem").classList.toggle("active", gender === "female");
+  document.getElementById("tr-male").classList.toggle("active", gender === "male");
+  speakAI(gender === "female" ? "Hello! I am Clara, your violin teacher. Click Start AI Masterclass when you are ready!" : "Greetings! I am Maestro, your violin instructor. Click Start AI Masterclass and let's begin!");
+}
+
 // ============================================================================
-// 10. MASTER CLICK HANDLER
+// 11. UNIVERSAL EVENT DELEGATION
 // ============================================================================
-let lastTap = 0;
 document.addEventListener("click", function(e) {
   const chk = e.target.closest("#chk-box input");
   if (chk) { updChecks(); return; }
@@ -1400,79 +1305,13 @@ document.addEventListener("click", function(e) {
   const act = btn.getAttribute("data-action");
   const val = btn.getAttribute("data-val");
 
-  if (act === "book") selectBook(parseInt(val, 10));
+  if (act === "book") switchBook(parseInt(val, 10));
   else if (act === "week") selectWeek(parseInt(val, 10));
-  else if (act === "step-week") selectWeek(curIdx + parseInt(val, 10));
+  else if (act === "step-week") {
+    flipPage(parseInt(val, 10));
+  }
   else if (act === "ex") loadEx(parseInt(val, 10));
   else if (act === "pos") setPos(parseInt(val, 10));
-  else if (act === "set-gender") {
-    trainerGender = val;
-    document.getElementById("tr-female").classList.toggle("active", val === "female");
-    document.getElementById("tr-male").classList.toggle("active", val === "male");
-    speakAI(val === "female"
-      ? "Hello! I'm Clara, your violin coach. Click Start AI Masterclass whenever you're ready to play!"
-      : "Greetings! I am Maestro, your violin instructor. Click Start AI Masterclass and let's hear your tone!");
-  }
-  else if (act === "set-pace") {
-    pacingMode = val;
-    document.getElementById("pace-self").classList.toggle("active", val === "self");
-    document.getElementById("pace-tempo").classList.toggle("active", val === "tempo");
-  }
-  else if (act === "start-masterclass") startAiMasterclass();
-  else if (act === "note") {
-    playViolin(val, 0.4);
-    if (aiStage === "listening" && pacingMode === "self") {
-      recordSilentNoteResult(aiStepIdx, activeNotes[aiStepIdx], val, 0);
-    } else {
-      highlightNote(val, false);
-    }
-  }
-  else if (act === "staff-note") {
-    aiStepIdx = parseInt(val, 10);
-    moveCursorToIdx(aiStepIdx, true);
-  }
-  else if (act === "sim-run") {
-    stopPlayAlong();
-    aiStage = "listening";
-    pacingMode = "self";
-    drawStaff();
-    activeNotes.forEach((pt, idx) => {
-      if (val === "perfect") {
-        recordSilentNoteResult(idx, pt, pt, 0);
-      } else {
-        if (idx === 1) recordSilentNoteResult(idx, pt, pt === "A4" ? "B4" : "A4", 0);
-        else if (idx === 3) recordSilentNoteResult(idx, pt, pt, -7.5);
-        else recordSilentNoteResult(idx, pt, pt, 0);
-      }
-    });
-  }
-  else if (act === "practice-mistakes") {
-    if (problemNotesList.length > 0) {
-      activeNotes = problemNotesList.slice();
-      document.getElementById("reset-notes-btn").style.display = "inline-flex";
-      document.getElementById("fix-btn").style.display = "none";
-      drawStaff();
-      startAiMasterclass();
-    }
-  }
-  else if (act === "restore-full") {
-    activeNotes = fullExerciseNotes.slice();
-    document.getElementById("reset-notes-btn").style.display = "none";
-    drawStaff();
-    moveCursorToIdx(0, false);
-  }
-  else if (act === "play-synth") togglePlayAlong();
-  else if (act === "toggle-voice") {
-    voiceOn = !voiceOn;
-    btn.textContent = `🔊 Voice: ${voiceOn ? 'ON' : 'OFF'}`;
-  }
-  else if (act === "loop") { isLoop = !isLoop; btn.textContent = `🔁 Loop: ${isLoop ? 'ON' : 'OFF'}`; }
-  else if (act === "rate") {
-    mp3Rate = parseFloat(val);
-    mp3Player.playbackRate = mp3Rate;
-    mp3Player.preservesPitch = true;
-    [75,90,100].forEach(r => document.getElementById(`r-${r}`).classList.toggle("active", Math.round(mp3Rate*100) === r));
-  }
   else if (act === "metro") toggleMetro();
   else if (act === "bpm-add") setBpm(bpm + parseInt(val, 10));
   else if (act === "bpm-set") setBpm(parseInt(val, 10));
@@ -1487,33 +1326,10 @@ document.addEventListener("click", function(e) {
     osc.connect(g); g.connect(ctx.destination); osc.start();
     droneOsc = osc; btn.classList.add("active");
   }
-  else if (act === "clap") {
-    playClick("down");
-    const now = performance.now(), msg = document.getElementById("tap-msg");
-    if (lastTap > 0) msg.textContent = Math.abs((now - lastTap) - ((60 / bpm) * 1000)) < 95 ? "🟢 Spot On Beat!" : "⚡ Keep Steady!";
-    else msg.textContent = "👏 First Beat!";
-    lastTap = now;
-  }
-  else if (act === "timer-set") {
-    clearInterval(tmrInt); tmrInt = null; tmrSec = parseInt(val, 10);
-    document.getElementById("tmr-disp").textContent = fmtT(tmrSec);
-    document.getElementById("tmr-btn").textContent = "Start";
-  }
-  else if (act === "timer-toggle") {
-    const tBtn = document.getElementById("tmr-btn");
-    if (tmrInt) { clearInterval(tmrInt); tmrInt = null; tBtn.textContent = "Resume"; }
-    else {
-      playClick("down"); tBtn.textContent = "Pause";
-      tmrInt = setInterval(() => {
-        if (tmrSec > 0) { tmrSec--; document.getElementById("tmr-disp").textContent = fmtT(tmrSec); }
-        else { clearInterval(tmrInt); tmrInt = null; tBtn.textContent = "Done!"; playViolin("E5", 0.5); }
-      }, 1000);
-    }
-  }
 });
 
 // Initialize on load
-selectBook(1);
+switchBook(1);
 </script>
 </body>
 </html>
