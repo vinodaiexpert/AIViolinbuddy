@@ -694,6 +694,22 @@ function flipPage(delta) {
   }, 280);
 }
 
+function stepWeek(delta) {
+  const list = BOOK_DATA[curBook];
+  let nextIdx = curIdx + delta;
+  if (nextIdx < 0 && curBook === 2) {
+    switchBook(1);
+    selectWeek(BOOK_DATA[1].length - 1);
+    return;
+  }
+  if (nextIdx >= list.length && curBook === 1) {
+    switchBook(2);
+    selectWeek(0);
+    return;
+  }
+  selectWeek(nextIdx);
+}
+
 function startMasterclass() {
   stopPlayAlong();
   mp3Player.pause();
@@ -926,4 +942,339 @@ function switchBook(bNum) {
   curBook = bNum;
   document.getElementById("btn-book1").classList.toggle("active", bNum === 1);
   document.getElementById("btn-book2").classList.toggle("active", bNum === 2);
-  selectWeek(
+  selectWeek(0);
+}
+
+function selectWeek(idx) {
+  stopPlayAlong();
+  const list = BOOK_DATA[curBook];
+  curIdx = Math.max(0, Math.min(list.length - 1, idx));
+  const w = list[curIdx];
+  curEx = 0;
+
+  document.getElementById("week-tabs").innerHTML = list.map((item, i) => `
+    <button type="button" class="week-btn ${i === curIdx ? 'active' : ''}" onclick="selectWeek(${i})">${item.tab}</button>
+  `).join("");
+
+  setBpm(w.bpm);
+  setPos(w.pos);
+
+  document.getElementById("w-badge").textContent = w.badge;
+  document.getElementById("w-pos-badge").textContent = POS_DATA[w.pos].name;
+  document.getElementById("w-title").textContent = w.title;
+  document.getElementById("w-goal").textContent = w.goal;
+  document.getElementById("page-num").textContent = `${w.badge} (${curIdx + 1} of ${list.length})`;
+
+  document.getElementById("chk-box").innerHTML = w.checks.map(c => `
+    <label class="chk-item"><input type="checkbox"><span>${c}</span></label>
+  `).join("");
+  updChecks();
+
+  document.getElementById("ex-tabs").innerHTML = w.exercises.map((ex, i) => `
+    <button type="button" class="ex-tab ${i === 0 ? 'active' : ''}" onclick="loadEx(${i})">${ex.id}</button>
+  `).join("");
+
+  loadEx(0);
+}
+
+function updChecks() {
+  const inps = document.querySelectorAll("#chk-box input");
+  let d = 0;
+  inps.forEach(inp => { inp.parentElement.classList.toggle("done", inp.checked); if (inp.checked) d++; });
+  document.getElementById("chk-count").textContent = `${d}/${inps.length} Done`;
+}
+
+function loadEx(eIdx) {
+  stopPlayAlong();
+  aiStage = "idle";
+  document.getElementById("masterclass-btn").textContent = "🎓 Start AI Masterclass (Brief → Play → Review)";
+  document.getElementById("fix-btn").style.display = "none";
+  document.getElementById("reset-notes-btn").style.display = "none";
+  const w = BOOK_DATA[curBook][curIdx];
+  curEx = Math.max(0, Math.min(w.exercises.length - 1, eIdx));
+  document.querySelectorAll("#ex-tabs .ex-tab").forEach((b, i) => b.classList.toggle("active", i === curEx));
+  const ex = w.exercises[curEx];
+  fullExerciseNotes = ex.notes.slice();
+  activeNotes = ex.notes.slice();
+  aiStepIdx = 0; runResults = [];
+  document.getElementById("ai-console").className = "ai-console";
+  document.getElementById("ai-stage-lbl").textContent = "Stage: Standby";
+  document.getElementById("ex-title").textContent = ex.title;
+  setMp3Track(ex.mp3);
+  drawStaff();
+  moveCursorToIdx(0, false);
+}
+
+function setMp3Track(path) {
+  document.getElementById("mp3-path").textContent = path;
+  const player = document.getElementById("mp3-player");
+  player.pause();
+  player.src = path;
+  player.playbackRate = mp3Rate;
+}
+
+// ============================================================================
+// 7. FINGERBOARD & SHEET MUSIC (INITIALIZED ON LOAD)
+// ============================================================================
+function setPos(p) {
+  curPos = p;
+  const info = POS_DATA[p] || POS_DATA[1];
+  [0,1,2,3,4,5].forEach(k => {
+    const b = document.getElementById(`fbp-${k}`);
+    if (b) b.classList.toggle("active", k === p);
+  });
+  document.getElementById("pos-desc").textContent = info.desc;
+  document.getElementById("pos-lbl").textContent = `Position: ${info.name}`;
+  document.getElementById("fb-hdr").innerHTML = `<span>Str</span><span>0 (Open)</span><span>1st Finger</span><span>2nd Finger</span><span>3rd Finger</span><span>4th Finger</span>`;
+  document.getElementById("fb-rows").innerHTML = info.rows.map(r => `
+    <div class="fb-row">
+      <span class="fb-str">${r[0]}</span>
+      ${r.slice(1).map((nt, idx) => `
+        <button type="button" class="fb-cell" id="cell-${normNote(nt)}" onclick="clickFingerboardNote('${nt}')">${idx === 0 ? '0 ' : idx + ' '}(${nt})</button>
+      `).join("")}
+    </div>
+  `).join("");
+}
+
+function clickFingerboardNote(pitch) {
+  playViolin(pitch, 0.45);
+  document.querySelectorAll(".fb-cell").forEach(c => c.classList.remove("active"));
+  const target = document.getElementById(`cell-${normNote(pitch)}`);
+  if (target) target.classList.add("active");
+  document.getElementById("pitch-badge").textContent = `Pitch: ${pitch} (${Math.round(getNoteFreq(pitch))} Hz)`;
+
+  if (aiStage === "listening") {
+    recordSilentNoteResult(aiStepIdx, activeNotes[aiStepIdx], pitch, 0);
+  }
+}
+
+function drawStaff() {
+  const svg = document.getElementById("sheet-svg");
+  if (!svg) return;
+  let html = `<rect id="cursor-bar" x="82" y="14" width="18" height="120" rx="4" fill="rgba(217,119,6,0.25)" style="display:none;" />`;
+  [45,60,75,90,105].forEach(y => { html += `<line x1="15" y1="${y}" x2="685" y2="${y}" stroke="#57534e" stroke-width="1.2"/>`; });
+  html += `<text x="20" y="94" font-size="46" font-family="serif" fill="#1c1917">𝄞</text>
+           <text x="54" y="72" font-size="19" font-weight="bold" font-family="serif" fill="#1c1917">${sig}</text>
+           <text x="54" y="96" font-size="19" font-weight="bold" font-family="serif" fill="#1c1917">4</text>`;
+
+  const startX = 90, stepX = 575 / Math.max(1, activeNotes.length);
+  activeNotes.forEach((pt, idx) => {
+    const x = startX + idx * stepX, y = Y_MAP[pt] || 75;
+    const bowSym = idx % 2 === 0 ? "∏" : "V";
+    if (y >= 116) html += `<line x1="${x-9}" y1="120" x2="${x+9}" y2="120" stroke="#292524" stroke-width="1.2"/>`;
+    if (y >= 128) html += `<line x1="${x-9}" y1="135" x2="${x+9}" y2="135" stroke="#292524" stroke-width="1.2"/>`;
+    if (y <= 30) html += `<line x1="${x-9}" y1="30" x2="${x+9}" y2="30" stroke="#292524" stroke-width="1.2"/>`;
+    if (y <= 18) html += `<line x1="${x-9}" y1="18" x2="${x+9}" y2="18" stroke="#292524" stroke-width="1.2"/>`;
+
+    html += `<g onclick="clickStaffIdx(${idx})" style="cursor:pointer;">
+      <text x="${x}" y="24" font-size="10" font-weight="bold" text-anchor="middle" fill="#78350f">${bowSym}</text>
+      <ellipse id="nh-${idx}" class="note-head" cx="${x}" cy="${y}" rx="6" ry="4.5" transform="rotate(-18 ${x} ${y})" fill="#1c1917" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="${x+5}" y1="${y}" x2="${x+5}" y2="${y-24}" stroke="#1c1917" stroke-width="1.5"/>
+      <text x="${x}" y="145" font-size="9" font-family="monospace" text-anchor="middle" fill="#78716c">${pt}</text>
+    </g>`;
+
+    if ((idx + 1) % sig === 0 && idx < activeNotes.length - 1) {
+      const bx = x + stepX * 0.5;
+      html += `<line x1="${bx}" y1="45" x2="${bx}" y2="105" stroke="#a8a29e" stroke-width="1.2"/>`;
+    }
+  });
+  html += `<line x1="680" y1="45" x2="680" y2="105" stroke="#1c1917" stroke-width="3"/>`;
+  svg.innerHTML = html;
+}
+
+function clickStaffIdx(idx) {
+  aiStepIdx = idx;
+  moveCursorToIdx(idx, true);
+}
+
+function moveCursorToIdx(idx, playSynth = true) {
+  const pt = activeNotes[idx];
+  if (!pt) return;
+  document.querySelectorAll(".note-head").forEach(el => {
+    if (!el.classList.contains("note-ok") && !el.classList.contains("note-err") && !el.classList.contains("note-flat")) {
+      el.classList.remove("note-on");
+    }
+  });
+  const el = document.getElementById(`nh-${idx}`);
+  if (el && !el.classList.contains("note-ok") && !el.classList.contains("note-err") && !el.classList.contains("note-flat")) {
+    el.classList.add("note-on");
+  }
+
+  const startX = 90, stepX = 575 / Math.max(1, activeNotes.length);
+  const cur = document.getElementById("cursor-bar");
+  if (cur) {
+    cur.style.display = "block";
+    cur.setAttribute("x", startX + idx * stepX - 9);
+  }
+  document.getElementById("bow-fill").style.width = idx % 2 === 0 ? "85%" : "20%";
+  document.getElementById("bow-txt").textContent = idx % 2 === 0 ? "Bow: ∏ Down" : "Bow: V Up";
+  if (playSynth) playViolin(pt, 0.45);
+}
+
+const mp3Player = document.getElementById("mp3-player");
+mp3Player.addEventListener("timeupdate", () => {
+  if (mp3Player.paused || !mp3Player.duration) return;
+  const idx = Math.min(activeNotes.length - 1, Math.floor((mp3Player.currentTime / mp3Player.duration) * activeNotes.length));
+  moveCursorToIdx(idx, false);
+});
+
+// ============================================================================
+// 8. AUDIO & METRONOME
+// ============================================================================
+function togglePlayAlong() { isPlaying ? stopPlayAlong() : startPlayAlong(); }
+function stopPlayAlong() {
+  isPlaying = false;
+  playTimers.forEach(t => clearTimeout(t)); playTimers = [];
+  document.getElementById("play-ico").textContent = "▶";
+  document.getElementById("play-txt").textContent = "Reference Synth";
+  document.getElementById("count-lbl").style.display = "none";
+}
+function startPlayAlong() {
+  stopPlayAlong();
+  mp3Player.pause();
+  isPlaying = true;
+  document.getElementById("play-ico").textContent = "⏹";
+  document.getElementById("play-txt").textContent = "Stop Synth";
+  const beatMs = (60 / bpm) * 1000;
+  const cnt = document.getElementById("count-lbl");
+  cnt.style.display = "inline-block";
+
+  for (let b = 0; b < sig; b++) {
+    playTimers.push(setTimeout(() => { playClick(b === 0 ? "down" : "beat"); cnt.textContent = `Count: ${b+1}`; }, b * beatMs));
+  }
+  let elapsed = sig * beatMs;
+  activeNotes.forEach((pt, idx) => {
+    playTimers.push(setTimeout(() => {
+      cnt.style.display = "none";
+      playClick(idx % sig === 0 ? "down" : "beat");
+      moveCursorToIdx(idx, true);
+    }, elapsed));
+    elapsed += beatMs;
+  });
+  playTimers.push(setTimeout(() => { if (isPlaying && isLoop) startPlayAlong(); else stopPlayAlong(); }, elapsed));
+}
+
+function setBpm(v) {
+  bpm = Math.max(30, Math.min(200, parseInt(v, 10) || 60));
+  document.getElementById("bpm-rng").value = bpm;
+  document.getElementById("bpm-txt").textContent = `${bpm} BPM`;
+  document.getElementById("bpm-badge").textContent = `♩ = ${bpm} BPM`;
+  if (isMetro) { clearInterval(metroTimer); runMetro(); }
+}
+function addBpm(d) { setBpm(bpm + d); }
+function toggleMetro() {
+  isMetro = !isMetro;
+  document.getElementById("metro-btn").textContent = isMetro ? "⏹ Stop" : "▶ Beats";
+  if (isMetro) { metroStep = 0; runMetro(); }
+  else { clearInterval(metroTimer); document.querySelectorAll(".beat-dot").forEach(d => d.className = "beat-dot"); }
+}
+function runMetro() {
+  const ms = ((60 / bpm) * 1000) / sub;
+  const tick = () => {
+    const main = (metroStep % sub) === 0, b = Math.floor(metroStep / sub) % sig;
+    if (main) {
+      playClick(b === 0 ? "down" : "beat");
+      document.querySelectorAll(".beat-dot").forEach((d, i) => { d.className = i === b ? (i === 0 ? "beat-dot down" : "beat-dot sub") : "beat-dot"; });
+    } else playClick("sub");
+    metroStep++;
+  };
+  tick(); metroTimer = setInterval(tick, ms);
+}
+function updateSub() {
+  sub = parseInt(document.getElementById("sub-sel").value, 10) || 1;
+  if (isMetro) { clearInterval(metroTimer); runMetro(); }
+}
+
+function setAudioRate(r) {
+  mp3Rate = r;
+  mp3Player.playbackRate = r;
+  mp3Player.preservesPitch = true;
+  [75,90,100].forEach(v => document.getElementById(`r-${v}`).classList.toggle("active", Math.round(r*100) === v));
+}
+function changeSig(val) {
+  sig = parseInt(val, 10) || 4;
+  let h = ""; for (let i = 0; i < sig; i++) h += `<div class="beat-dot"></div>`;
+  document.getElementById("beat-dots").innerHTML = h;
+  drawStaff();
+}
+function setTimer(s, lbl) {
+  document.getElementById("tmr-disp").textContent = fmtT(s);
+  document.getElementById("tmr-lbl").textContent = lbl;
+}
+
+// ============================================================================
+// 9. MIC LISTENER
+// ============================================================================
+let micStream = null, micInt = null;
+async function toggleMic() {
+  const btn = document.getElementById("mic-btn"), txt = document.getElementById("tuner-txt"), ndl = document.getElementById("tuner-ndl");
+  if (micStream) {
+    micStream.getTracks().forEach(t => t.stop()); micStream = null; clearInterval(micInt);
+    btn.textContent = "🎙️ Mic Tuner"; txt.textContent = "Standby"; ndl.style.left = "50%"; return;
+  }
+  try {
+    const ctx = getCtx();
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: false } });
+    const src = ctx.createMediaStreamSource(micStream), an = ctx.createAnalyser();
+    an.fftSize = 2048; src.connect(an);
+    btn.textContent = "⏹ Stop Mic"; txt.textContent = "Listening...";
+    const buf = new Float32Array(an.fftSize);
+
+    micInt = setInterval(() => {
+      if (performance.now() < micIgnoreUntil || ("speechSynthesis" in window && window.speechSynthesis.speaking)) return;
+      an.getFloatTimeDomainData(buf);
+      const res = detectViolinPitchNSDF(buf, ctx.sampleRate);
+      if (res.freq === -1) return;
+
+      let best = "A4", bf = 440, md = 9999;
+      for (const [k, f] of Object.entries(FREQS)) {
+        if (Math.abs(res.freq - f) < md) { md = Math.abs(res.freq - f); best = k; bf = f; }
+      }
+      const diff = res.freq - bf;
+      ndl.style.left = `${Math.max(8, Math.min(92, 50 + diff * 3))}%`;
+      txt.textContent = `${best} (${Math.round(res.freq)} Hz)`;
+
+      if (aiStage === "listening") {
+        if (best === heldNoteName) heldFrames++;
+        else { heldNoteName = best; heldFrames = 1; }
+
+        const targetPt = activeNotes[aiStepIdx];
+        if (heldFrames >= 3) {
+          heldFrames = 0;
+          lockMicForMs(350);
+          recordSilentNoteResult(aiStepIdx, targetPt, best, diff);
+        }
+      }
+    }, 140);
+  } catch (e) { txt.textContent = "Allow Mic"; }
+}
+
+function setTrainer(gender) {
+  trainerGender = gender;
+  document.getElementById("tr-fem").classList.toggle("active", gender === "female");
+  document.getElementById("tr-male").classList.toggle("active", gender === "male");
+  speakAI(gender === "female" ? "Hello! I am Clara, your violin teacher. Click Start AI Masterclass when you are ready!" : "Greetings! I am Maestro, your violin instructor. Click Start AI Masterclass and let's begin!");
+}
+
+// ============================================================================
+// 10. UNIVERSAL EVENT DELEGATION
+// ============================================================================
+document.addEventListener("click", function(e) {
+  const chk = e.target.closest("#chk-box input");
+  if (chk) { updChecks(); return; }
+
+  const btn = e.target.closest("[data-action]");
+  if (!btn) return;
+  const act = btn.getAttribute("data-action");
+  const val = btn.getAttribute("data-val");
+
+  if (act === "book") switchBook(parseInt(val, 10));
+  else if (act === "week") selectWeek(parseInt(val, 10));
+  else if (act === "flip") flipPage(parseInt(val, 10));
+});
+
+// Initialize on load
+switchBook(1);
+</script>
+</body>
+</html>
