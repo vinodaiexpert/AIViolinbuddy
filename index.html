@@ -29,7 +29,7 @@
   .status-pill { font-size: 9.5px; background: #064e3b; color: #34d399; padding: 2px 7px; border-radius: 99px; border: 1px solid #059669; }
   .brand p { font-size: 10px; color: #a8a29e; }
 
-  .book-switches { display: flex; gap: 6px; flex-wrap: wrap; }
+  .book-switches { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
   .book-btn {
     background: #2c2520; color: #e7e5e4; border: 1.5px solid #443b34;
     padding: 5px 12px; border-radius: 6px; font-size: 11.5px; font-weight: 800; cursor: pointer; transition: 0.15s;
@@ -42,50 +42,78 @@
     border-left: 1px solid var(--border); border-right: 1px solid var(--border);
     padding: 5px 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;
   }
-  .week-tabs { display: flex; gap: 3px; flex-wrap: wrap; max-height: 32px; overflow-y: auto; }
+  .week-tabs { display: flex; gap: 3px; flex-wrap: wrap; max-height: 30px; overflow-y: auto; }
   .week-btn {
     background: #181411; color: #d6d3d1; border: 1px solid #443b34;
     padding: 3px 8px; border-radius: 4px; font-size: 10.5px; font-weight: 700; cursor: pointer;
   }
   .week-btn.active { background: #fffbeb; color: #92400e; border-color: var(--amber-br); font-weight: 800; }
 
-  /* 3D BOOK SPREAD */
+  /* 3D BOOK SPREAD & REALISTIC PAGE-TURN LEAF */
   .book-viewport {
     max-width: 1420px; width: 100%; margin: 0 auto; flex: 1; min-height: 0;
-    perspective: 1600px; position: relative;
+    perspective: 2000px; position: relative;
   }
   .book-spread {
     width: 100%; height: 100%; display: grid; grid-template-columns: 1fr 1fr;
     background: var(--page-l); border: 3.5px solid #382f28; border-radius: 0 0 8px 8px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.8); position: relative; transform-style: preserve-3d;
-    transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.8); position: relative; overflow: hidden;
   }
   @media (max-width: 960px) { .book-spread { grid-template-columns: 1fr; } .spine { display: none; } }
   .spine {
-    position: absolute; top: 0; bottom: 0; left: 50%; width: 22px; transform: translateX(-50%);
-    background: linear-gradient(90deg, rgba(0,0,0,0.02), rgba(0,0,0,0.2) 48%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.18) 52%, rgba(0,0,0,0.02));
-    pointer-events: none; z-index: 10;
+    position: absolute; top: 0; bottom: 0; left: 50%; width: 24px; transform: translateX(-50%);
+    background: linear-gradient(90deg, rgba(0,0,0,0.03), rgba(0,0,0,0.22) 48%, rgba(0,0,0,0.38) 50%, rgba(0,0,0,0.2) 52%, rgba(0,0,0,0.03));
+    pointer-events: none; z-index: 15;
   }
 
-  .page-l { padding: 12px 18px; background: var(--page-l); border-right: 1px solid #e7e0d2; display: flex; flex-direction: column; justify-content: space-between; overflow-y: auto; }
-  .page-r { padding: 12px 18px; background: var(--page-r); display: flex; flex-direction: column; justify-content: space-between; overflow-y: auto; }
-  .page-hdr { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e5dccb; padding-bottom: 5px; margin-bottom: 6px; flex-wrap: wrap; gap: 4px; }
+  /* 3D FLIPPING LEAF OVERLAY */
+  .page-turn-leaf {
+    position: absolute; top: 0; bottom: 0; width: 50%; left: 50%;
+    background: linear-gradient(90deg, #ece3d0 0%, #fffdf8 15%, #faf5ea 100%);
+    border-left: 1px solid #d6cbb5;
+    transform-origin: left center;
+    pointer-events: none; z-index: 30; opacity: 0;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.35);
+  }
+  .page-turn-leaf.flip-next {
+    animation: flipNextAnim 0.55s cubic-bezier(0.55, 0.05, 0.35, 1) forwards;
+  }
+  .page-turn-leaf.flip-prev {
+    animation: flipPrevAnim 0.55s cubic-bezier(0.55, 0.05, 0.35, 1) forwards;
+  }
+  @keyframes flipNextAnim {
+    0% { opacity: 1; transform: rotateY(0deg); }
+    50% { opacity: 1; box-shadow: -25px 0 45px rgba(0,0,0,0.5); }
+    100% { opacity: 0; transform: rotateY(-180deg); }
+  }
+  @keyframes flipPrevAnim {
+    0% { opacity: 1; transform: rotateY(-180deg); }
+    50% { opacity: 1; box-shadow: -25px 0 45px rgba(0,0,0,0.5); }
+    100% { opacity: 0; transform: rotateY(0deg); }
+  }
+
+  .page-l { padding: 10px 16px; background: var(--page-l); border-right: 1px solid #e7e0d2; display: flex; flex-direction: column; justify-content: space-between; overflow-y: auto; }
+  .page-r { padding: 10px 16px; background: var(--page-r); display: flex; flex-direction: column; justify-content: space-between; overflow-y: auto; }
+  .page-hdr { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e5dccb; padding-bottom: 4px; margin-bottom: 5px; flex-wrap: wrap; gap: 4px; }
   .badge { background: var(--amber-lt); color: #92400e; font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; }
   .pos-badge { background: #ede9fe; color: #5b21b6; font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; }
-  .title-serif { font-family: Georgia, serif; font-size: 19px; font-weight: 700; color: #1c1917; margin-bottom: 4px; }
-  .goal-box { background: #fffbeb; border-left: 4px solid var(--amber); padding: 6px 10px; border-radius: 0 5px 5px 0; margin-bottom: 6px; font-size: 11px; line-height: 1.35; }
-  .goal-box strong { color: #92400e; display: block; font-size: 9.5px; text-transform: uppercase; margin-bottom: 1px; }
+  .title-serif { font-family: Georgia, serif; font-size: 18px; font-weight: 700; color: #1c1917; margin-bottom: 3px; }
+  .goal-box { background: #fffbeb; border-left: 4px solid var(--amber); padding: 5px 9px; border-radius: 0 5px 5px 0; margin-bottom: 5px; font-size: 11px; line-height: 1.3; }
+  .goal-box strong { color: #92400e; display: block; font-size: 9px; text-transform: uppercase; }
 
-  .sec-lbl { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; display: flex; justify-content: space-between; }
-  .checklist { display: flex; flex-direction: column; gap: 3px; margin-bottom: 6px; max-height: 100px; overflow-y: auto; }
-  .chk-item { display: flex; align-items: flex-start; gap: 6px; background: #fff; border: 1px solid #e5dccb; padding: 4px 8px; border-radius: 5px; font-size: 11px; cursor: pointer; }
-  .chk-item input { margin-top: 2px; accent-color: var(--amber); width: 13px; height: 13px; }
+  .sec-lbl { font-size: 9.5px; font-weight: 800; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; display: flex; justify-content: space-between; }
+  .checklist { display: flex; flex-direction: column; gap: 3px; margin-bottom: 5px; }
+  .chk-item { display: flex; align-items: flex-start; gap: 6px; background: #fff; border: 1px solid #e5dccb; padding: 3.5px 8px; border-radius: 5px; font-size: 10.5px; cursor: pointer; }
+  .chk-item input { margin-top: 1px; accent-color: var(--amber); width: 13px; height: 13px; }
   .chk-item.done span { text-decoration: line-through; color: #a8a29e; }
+
+  /* QUICK SCALES & PIECES BAR */
+  .quick-lib { background: #f3ede0; border: 1px solid #dcd3c0; border-radius: 6px; padding: 5px 8px; margin-bottom: 5px; display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
 
   /* AI MASTERCLASS CONSOLE */
   .ai-console {
     background: #181411; color: #fff; border: 1.5px solid #3a312a; border-left: 4px solid var(--amber-br);
-    border-radius: 7px; padding: 8px 10px; margin-bottom: 6px;
+    border-radius: 7px; padding: 7px 10px; margin-bottom: 5px;
   }
   .ai-console.briefing { border-left-color: #38bdf8; background: #0c2536; }
   .ai-console.listening { border-left-color: var(--purple); background: #22113b; }
@@ -95,14 +123,17 @@
   .trainer-pills { display: flex; gap: 3px; align-items: center; flex-wrap: wrap; }
   .tpill { background: #2c2520; color: #d6d3d1; border: 1px solid #443b34; padding: 2px 6px; border-radius: 4px; font-size: 9.5px; font-weight: 700; cursor: pointer; }
   .tpill.active { background: var(--amber-br); color: #14110f; border-color: #fff; font-weight: 800; }
-  .ai-speech { font-size: 11px; font-weight: 600; color: #fef3c7; line-height: 1.35; margin-bottom: 5px; }
+  .ai-speech { font-size: 11px; font-weight: 600; color: #fef3c7; line-height: 1.35; margin-bottom: 4px; }
 
   /* Q&A BAR */
-  .qa-box { background: #25201c; border: 1px solid #443b34; border-radius: 6px; padding: 6px 8px; margin-top: 5px; }
-  .qa-input-row { display: flex; gap: 4px; margin-top: 4px; }
-  .qa-input { flex: 1; background: #14110f; color: #fff; border: 1px solid #574c43; border-radius: 4px; padding: 4px 6px; font-size: 10.5px; }
+  .qa-box { background: #25201c; border: 1px solid #443b34; border-radius: 5px; padding: 5px 7px; }
+  .qa-input-row { display: flex; gap: 4px; margin-top: 3px; }
+  .qa-input { flex: 1; background: #14110f; color: #fff; border: 1px solid #574c43; border-radius: 4px; padding: 3px 6px; font-size: 10px; }
+  .qa-chips { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 4px; }
+  .qa-chip { background: #332b24; color: #fcd34d; border: 1px solid #443b34; border-radius: 4px; padding: 2px 5px; font-size: 9px; cursor: pointer; }
+  .qa-chip:hover { background: #443b34; }
 
-  .btn { border: none; padding: 5px 10px; border-radius: 5px; font-size: 10.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; transition: 0.1s; }
+  .btn { border: none; padding: 4px 9px; border-radius: 5px; font-size: 10.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; transition: 0.1s; }
   .btn:active { transform: scale(0.96); }
   .btn-amber { background: var(--amber); color: #fff; }
   .btn-emerald { background: var(--emerald); color: #fff; }
@@ -110,48 +141,49 @@
   .btn-dark { background: #292524; color: #fff; }
   .btn-outline { background: #fff; color: #292524; border: 1px solid #d6d3d1; }
 
-  .hw-box { background: #26211d; color: #fef3c7; padding: 7px 10px; border-radius: 6px; font-size: 11px; line-height: 1.3; }
-  .hw-box strong { color: var(--amber-br); text-transform: uppercase; font-size: 9.5px; display: block; margin-bottom: 1px; }
+  .hw-box { background: #26211d; color: #fef3c7; padding: 6px 9px; border-radius: 6px; font-size: 10.5px; line-height: 1.25; }
+  .hw-box strong { color: var(--amber-br); text-transform: uppercase; font-size: 9px; display: block; }
 
   /* RIGHT PAGE ELEMENTS */
   .ex-tabs { display: flex; gap: 3px; flex-wrap: wrap; }
   .ex-tab { background: #e7e5e4; color: #44403c; border: none; padding: 3px 8px; border-radius: 5px; font-size: 10.5px; font-weight: 700; cursor: pointer; }
   .ex-tab.active { background: #92400e; color: #fff; }
 
-  .mp3-bar { background: #f5efe2; border: 1px solid #dfd5c0; border-radius: 6px; padding: 5px 8px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 5px; }
-  .spd-btn { background: #fff; color: #292524; border: 1px solid #d6d3d1; padding: 2px 7px; border-radius: 99px; font-size: 10px; font-weight: 700; cursor: pointer; }
+  .mp3-bar { background: #f5efe2; border: 1px solid #dfd5c0; border-radius: 6px; padding: 4px 8px; margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 5px; }
+  .spd-btn { background: #fff; color: #292524; border: 1px solid #d6d3d1; padding: 2px 7px; border-radius: 99px; font-size: 9.5px; font-weight: 700; cursor: pointer; }
   .spd-btn.active { background: #9a5b13; color: #fff; border-color: #9a5b13; }
 
-  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; background: #f5f2eb; border: 1px solid #e5dec9; padding: 5px 8px; border-radius: 6px; margin-bottom: 6px; }
-  .score-card { background: #fff; border: 2px solid #e7e0d2; border-radius: 7px; padding: 6px 8px; margin-bottom: 6px; overflow-x: auto; }
-  .bow-wrap { display: flex; align-items: center; gap: 8px; margin-top: 4px; padding-top: 4px; border-top: 1px solid #f0ece1; font-size: 10.5px; }
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; background: #f5f2eb; border: 1px solid #e5dec9; padding: 5px 8px; border-radius: 6px; margin-bottom: 5px; }
+  .score-card { background: #fff; border: 2px solid #e7e0d2; border-radius: 7px; padding: 5px 8px; margin-bottom: 5px; overflow-x: auto; }
+  .bow-wrap { display: flex; align-items: center; gap: 8px; margin-top: 3px; padding-top: 3px; border-top: 1px solid #f0ece1; font-size: 10px; }
   .bow-track { flex: 1; height: 7px; background: #e7e5e4; border-radius: 99px; overflow: hidden; }
   .bow-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #d97706, #f59e0b); transition: width 0.1s linear; }
 
   /* FINGERBOARD */
-  .fb-card { background: #1c1815; color: #fff; padding: 7px 10px; border-radius: 7px; border: 1px solid #3a312a; }
-  .pos-btn { background: #2c2520; color: #d6d3d1; border: 1px solid #443b34; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer; }
+  .fb-card { background: #1c1815; color: #fff; padding: 6px 9px; border-radius: 7px; border: 1px solid #3a312a; }
+  .pos-btn { background: #2c2520; color: #d6d3d1; border: 1px solid #443b34; padding: 2px 6px; border-radius: 4px; font-size: 9.5px; font-weight: 700; cursor: pointer; }
   .pos-btn.active { background: var(--amber-br); color: #14110f; border-color: #fff; }
   .fb-grid { background: #2b1d14; border-left: 5px solid #a8a29e; border-radius: 4px; padding: 4px; margin-top: 4px; }
   .fb-hdr { display: grid; grid-template-columns: 28px repeat(5, 1fr); font-size: 8.5px; color: #fcd34d; text-align: center; padding-bottom: 2px; border-bottom: 1px solid #443b34; margin-bottom: 3px; font-family: monospace; }
-  .fb-row { display: grid; grid-template-columns: 28px repeat(5, 1fr); gap: 3px; align-items: center; margin-bottom: 3px; }
-  .fb-str { font-weight: 800; font-size: 10.5px; color: var(--amber-br); text-align: center; }
-  .fb-cell { background: #29231e; color: #e7e5e4; border: 1px solid #574c43; border-radius: 3px; padding: 3px 2px; font-size: 9px; font-family: monospace; cursor: pointer; text-align: center; }
+  .fb-row { display: grid; grid-template-columns: 28px repeat(5, 1fr); gap: 3px; align-items: center; margin-bottom: 2.5px; }
+  .fb-str { font-weight: 800; font-size: 10px; color: var(--amber-br); text-align: center; }
+  .fb-cell { background: #29231e; color: #e7e5e4; border: 1px solid #574c43; border-radius: 3px; padding: 2.5px 2px; font-size: 9px; font-family: monospace; cursor: pointer; text-align: center; }
+  .fb-cell:hover { background: #78350f; }
   .fb-cell.active { background: var(--amber-br) !important; color: #14110f !important; font-weight: 800; border-color: #fff; }
 
   /* BOTTOM STUDIO DOCK */
-  .dock { max-width: 1420px; width: 100%; margin: 6px auto 0; background: var(--panel); color: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 8px; }
-  .dock-box { background: #161310; border: 1px solid #332b24; border-radius: 6px; padding: 6px 9px; display: flex; flex-direction: column; justify-content: space-between; gap: 4px; }
+  .dock { max-width: 1420px; width: 100%; margin: 5px auto 0; background: var(--panel); color: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 8px; }
+  .dock-box { background: #161310; border: 1px solid #332b24; border-radius: 6px; padding: 5px 9px; display: flex; flex-direction: column; justify-content: space-between; gap: 3px; }
   .dock-ttl { font-size: 9px; font-weight: 800; text-transform: uppercase; color: var(--amber-br); display: flex; justify-content: space-between; }
   .beat-dots { display: flex; gap: 5px; align-items: center; }
-  .beat-dot { width: 12px; height: 12px; border-radius: 50%; background: #332b24; border: 2px solid #443b34; }
+  .beat-dot { width: 11px; height: 11px; border-radius: 50%; background: #332b24; border: 2px solid #443b34; }
   .beat-dot.down { background: var(--amber-br); transform: scale(1.25); border-color: #fff; }
   .beat-dot.sub { background: var(--emerald-br); transform: scale(1.1); }
-  .tuner-bar { position: relative; height: 14px; background: linear-gradient(90deg, #e11d48 0%, #f59e0b 35%, #10b981 50%, #f59e0b 65%, #e11d48 100%); border-radius: 3px; overflow: hidden; }
+  .tuner-bar { position: relative; height: 13px; background: linear-gradient(90deg, #e11d48 0%, #f59e0b 35%, #10b981 50%, #f59e0b 65%, #e11d48 100%); border-radius: 3px; overflow: hidden; }
   .tuner-ndl { position: absolute; top: 1px; bottom: 1px; left: 50%; width: 5px; margin-left: -2.5px; background: #14110f; border: 1px solid #fff; transition: left 0.1s; }
   .drone-btn { background: #29231e; color: #d6d3d1; border: 1px solid #443b34; padding: 2px 6px; border-radius: 3px; font-size: 9.5px; font-family: monospace; font-weight: 700; cursor: pointer; }
   .drone-btn.active { background: var(--amber-br); color: #14110f; border-color: #fff; }
-  select.sel { background:#fff; color:#292524; border:1px solid #d6d3d1; border-radius:4px; font-size:10px; padding:3px 5px; font-weight:700; cursor:pointer; }
+  select.sel { background:#fff; color:#292524; border:1px solid #d6d3d1; border-radius:4px; font-size:10px; padding:2px 5px; font-weight:700; cursor:pointer; }
   select.sel-dark { background:#29231e; color:#fff; border:1px solid #443b34; border-radius:3px; font-size:9.5px; padding:2px 4px; font-weight:600; }
 
   .note-head { cursor: pointer; transition: 0.1s; }
@@ -166,8 +198,8 @@
   <!-- TOP HEADER -->
   <header class="top-bar">
     <div class="brand">
-      <h1>🎻 Living Violin Book & AI Masterclass <span class="status-pill">🟢 3D Flip-Book & AI Active</span></h1>
-      <p>Book 1 (W1–24) & Book 2 (Positions & 24 Scales) · Flip Pages or Use Week Tabs</p>
+      <h1>🎻 Living Violin Book & AI Masterclass <span class="status-pill">🟢 3D Page-Flip & Emotional AI Active</span></h1>
+      <p>Book 1 (W1–24) & Book 2 (Positions & 24 Scales) · Click Prev/Next Page or Press Left/Right Arrow Keys to Flip</p>
     </div>
     <div class="book-switches">
       <button type="button" class="book-btn active" id="btn-book1" onclick="switchBook(1)">📘 BOOK 1 (W1–24)</button>
@@ -178,9 +210,9 @@
   <!-- CHAPTER / WEEK BAR -->
   <nav class="week-bar">
     <div class="week-tabs" id="week-tabs"></div>
-    <div style="display: flex; gap: 4px;">
-      <button type="button" class="btn btn-outline" style="padding: 3px 8px; font-size: 10px;" data-action="flip" data-val="-1">⬅ Prev Page</button>
-      <button type="button" class="btn btn-outline" style="padding: 3px 8px; font-size: 10px;" data-action="flip" data-val="1">Next Page ➔</button>
+    <div style="display: flex; gap: 5px;">
+      <button type="button" class="btn btn-amber" style="padding: 3px 9px; font-size: 10.5px;" onclick="flipPage(-1)">⬅ Flip Prev Page</button>
+      <button type="button" class="btn btn-amber" style="padding: 3px 9px; font-size: 10.5px;" onclick="flipPage(1)">Flip Next Page ➔</button>
     </div>
   </nav>
 
@@ -188,6 +220,8 @@
   <div class="book-viewport">
     <main class="book-spread" id="book-spread-elem">
       <div class="spine"></div>
+      <!-- 3D Page-Turn Leaf Overlay -->
+      <div class="page-turn-leaf" id="page-turn-leaf"></div>
 
       <!-- LEFT PAGE -->
       <section class="page-l">
@@ -201,7 +235,7 @@
 
           <div class="goal-box">
             <strong>Lesson Goal & Focus</strong>
-            <span id="w-goal">Stand in playing position, hold the violin for 30 seconds, and pluck open strings.</span>
+            <span id="w-goal">Stand in playing position, hold the violin for 30 seconds, and pluck open strings A, E, D, G.</span>
           </div>
 
           <div class="sec-lbl">
@@ -210,39 +244,93 @@
           </div>
           <div class="checklist" id="chk-box"></div>
 
+          <!-- QUICK SCALE & PIECE SELECTOR -->
+          <div class="quick-lib">
+            <span style="font-size: 9.5px; font-weight: 800; color: #78350f;">🎼 QUICK LOAD:</span>
+            <select class="sel" id="scale-picker" onchange="loadQuickScale(this.value)">
+              <option value="">24 Scales (Book 2)...</option>
+              <optgroup label="12 Major Scales">
+                <option value="C|maj|3|sc_major_C">C Major (3rd Pos)</option>
+                <option value="G|maj|1|sc_major_G">G Major (1st Pos)</option>
+                <option value="D|maj|3|sc_major_D">D Major (3rd Pos)</option>
+                <option value="A|maj|1|sc_major_A">A Major (1st Pos)</option>
+                <option value="E|maj|1|sc_major_E">E Major (1st & 5th)</option>
+                <option value="B|maj|1|sc_major_B">B Major (1st Pos)</option>
+                <option value="F#|maj|3|sc_major_Fs">F♯ Major (3rd & 5th)</option>
+                <option value="Db|maj|3|sc_major_Db">D♭ Major (3rd Pos)</option>
+                <option value="Ab|maj|1|sc_major_Ab">A♭ Major (1st Pos)</option>
+                <option value="Eb|maj|1|sc_major_Eb">E♭ Major (1st & 5th)</option>
+                <option value="Bb|maj|1|sc_major_Bb">B♭ Major (1st Pos)</option>
+                <option value="F|maj|1|sc_major_F">F Major (1st & 5th)</option>
+              </optgroup>
+              <optgroup label="12 Minor Scales">
+                <option value="A|min|1|sc_minor_A">A Minor (1st Pos)</option>
+                <option value="E|min|1|sc_minor_E">E Minor (1st & 5th)</option>
+                <option value="B|min|1|sc_minor_B">B Minor (1st Pos)</option>
+                <option value="F#|min|1|sc_minor_Fs">F♯ Minor</option>
+                <option value="C#|min|3|sc_minor_Cs">C♯ Minor (3rd Pos)</option>
+                <option value="G#|min|0|sc_minor_Gs">G♯ Minor (½ Pos)</option>
+                <option value="Eb|min|1|sc_minor_Eb">E♭ Minor</option>
+                <option value="Bb|min|1|sc_minor_Bb">B♭ Minor</option>
+                <option value="F|min|1|sc_minor_F">F Minor</option>
+                <option value="C|min|3|sc_minor_C">C Minor (3rd Pos)</option>
+                <option value="G|min|1|sc_minor_G">G Minor</option>
+                <option value="D|min|3|sc_minor_D">D Minor (3rd Pos)</option>
+              </optgroup>
+            </select>
+
+            <select class="sel" id="piece-picker" onchange="loadQuickPiece(this.value)">
+              <option value="">Play-Along Pieces...</option>
+              <option value="Hot Cross Buns|1|72|audio/piece01.mp3|B4,A4,G4,B4,A4,G4,G4,A4,B4,A4,G4">1. Hot Cross Buns</option>
+              <option value="Mary Had a Little Lamb|1|72|audio/piece02.mp3|B4,A4,G4,A4,B4,B4,B4,A4,A4,A4,B4,D5,D5">2. Mary Had a Little Lamb</option>
+              <option value="Twinkle, Twinkle|1|72|audio/piece03.mp3|A4,A4,E5,E5,F#5,F#5,E5,D5,D5,C#5,C#5,B4,B4,A4">3. Twinkle, Twinkle (1st Pos)</option>
+              <option value="Ode to Joy (1st Pos)|1|72|audio/piece06.mp3|C#5,C#5,D5,E5,E5,D5,C#5,B4,A4,A4,B4,C#5,C#5,B4,B4">6. Ode to Joy (1st Pos)</option>
+              <option value="Minuet in G|1|84|audio/piece09.mp3|D5,G4,A4,B4,C5,D5,G4,G4,E5,C5,D5,E5,F#5,G5,G4,G4">9. Minuet in G</option>
+              <option value="Ode to Joy (3rd Pos)|3|72|audio2/b2_ode_3rd.mp3|F#5,F#5,G5,A5,A5,G5,F#5,E5,D5,D5,E5,F#5,E5,D5">Book 2: Ode to Joy (3rd Pos)</option>
+              <option value="Amazing Grace (3rd Pos)|3|76|audio2/b2_grace_3rd.mp3|D4,G4,B4,G4,B4,A4,G4,E4,D4">Book 2: Amazing Grace (3rd Pos)</option>
+              <option value="Twinkle (5th Pos)|5|72|audio2/b2_twinkle_5th.mp3|A5,A5,E6,E6,F#6,F#6,E6,D6,D6,C#6,C#6,B5,B5,A5">Book 2: Twinkle (5th Pos)</option>
+            </select>
+          </div>
+
           <!-- AI MASTERCLASS CONSOLE -->
           <div class="ai-console" id="ai-console">
             <div class="ai-hdr">
               <div class="trainer-pills">
                 <span style="font-size: 9.5px; font-weight: 800; color: var(--amber-br);">AI TEACHER:</span>
-                <button type="button" class="tpill active" id="tr-fem" onclick="setTrainer('female')">👩 Clara</button>
-                <button type="button" class="tpill" id="tr-male" onclick="setTrainer('male')">👨 Maestro</button>
+                <button type="button" class="tpill active" id="tr-fem" onclick="setTrainer('female')">👩 Clara (Warm)</button>
+                <button type="button" class="tpill" id="tr-male" onclick="setTrainer('male')">👨 Maestro (Expressive)</button>
               </div>
               <span style="font-size: 9.5px; font-family: monospace; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 3px;" id="ai-stage-lbl">
                 Stage: Standby
               </span>
             </div>
             <div class="ai-speech" id="ai-speech-txt">
-              👋 Choose <strong>👩 Clara</strong> or <strong>👨 Maestro</strong>, then click <strong>"🎓 Start AI Masterclass"</strong> on the right!
+              👋 Choose <strong>👩 Clara</strong> or <strong>👨 Maestro</strong>, then click <strong>"🎓 Start AI Masterclass"</strong> on the right! We will brief you with emotion, listen silently while you play, and review your notes at the end.
             </div>
 
             <!-- Q&A BAR -->
             <div class="qa-box">
               <div style="font-size: 9.5px; font-weight: 800; color: #fcd34d; display:flex; justify-content:space-between;">
-                <span>💬 Ask Clara / Maestro a Question:</span>
+                <span>💬 Ask Clara / Maestro Any Violin Question:</span>
                 <span style="color: #a8a29e; font-size: 9px;">Voice or Text</span>
               </div>
               <div class="qa-input-row">
-                <input type="text" id="qa-txt" class="qa-input" placeholder="e.g. How do I shift to 3rd pos? Why is my tone scratchy?" onkeydown="if(event.key==='Enter') askTeacherQ()">
+                <input type="text" id="qa-txt" class="qa-input" placeholder="Ask anything: e.g. Why is my bow scratchy? How to shift to 3rd pos?" onkeydown="if(event.key==='Enter') askTeacherQ()">
                 <button type="button" class="btn btn-amber" style="padding: 3px 8px; font-size: 10px;" onclick="askTeacherQ()">Ask 🔊</button>
                 <button type="button" class="btn btn-dark" style="padding: 3px 8px; font-size: 10px;" onclick="toggleVoiceQ()">🎙️ Speak</button>
+              </div>
+              <div class="qa-chips">
+                <span class="qa-chip" onclick="processStudentQuestion('Play demo for me')">🎻 Play Demo</span>
+                <span class="qa-chip" onclick="processStudentQuestion('Why is my bow tone scratchy?')">🛠️ Scratchy Bow?</span>
+                <span class="qa-chip" onclick="processStudentQuestion('How do I find 3rd position?')">📐 Find 3rd Pos</span>
+                <span class="qa-chip" onclick="processStudentQuestion('How do I practise vibrato?')">✨ Vibrato Tip</span>
               </div>
             </div>
           </div>
         </div>
 
         <div class="hw-box">
-          <strong>📓 Position & Practice Note</strong>
+          <strong>📓 Position & Shifting Rule</strong>
           <span id="pos-desc">In the Nth position, your 1st finger plays the note N letters above the open string. Move your thumb with your hand on every shift!</span>
         </div>
       </section>
@@ -262,8 +350,8 @@
             </div>
           </div>
 
-          <h3 class="title-serif" style="font-size: 18px; margin-bottom: 2px;" id="ex-title">Exercise 1.1</h3>
-          <p style="font-size: 10.5px; color: var(--muted); margin-bottom: 5px;" id="ex-desc">Click "🎓 Start AI Masterclass" or use the Play-Along audio binder.</p>
+          <h3 class="title-serif" style="font-size: 18px; margin-bottom: 2px;" id="ex-title">Exercise 1.1 · Pluck A and E</h3>
+          <p style="font-size: 10.5px; color: var(--muted); margin-bottom: 5px;" id="ex-desc">Click any note head on the staff to hear its pitch, or start the AI Masterclass!</p>
 
           <!-- MP3 PLAY-ALONG BINDER BAR -->
           <div class="mp3-bar">
@@ -276,7 +364,7 @@
               <button type="button" class="spd-btn" id="r-90" onclick="setAudioRate(0.9)">90%</button>
               <button type="button" class="spd-btn active" id="r-100" onclick="setAudioRate(1.0)">Full 100%</button>
             </div>
-            <audio id="mp3-player" controls preload="none" src="audio/ex01_1.mp3" style="height: 26px; width: 185px;"></audio>
+            <audio id="mp3-player" controls preload="none" src="audio/ex01_1.mp3" style="height: 25px; width: 185px;"></audio>
           </div>
 
           <!-- MASTERCLASS TOOLBAR -->
@@ -287,8 +375,10 @@
             <button type="button" class="btn btn-emerald" onclick="togglePlayAlong()">
               <span id="play-ico">▶</span> <span id="play-txt">Reference Synth</span>
             </button>
+            <button type="button" class="btn btn-outline" style="padding:3px 7px; font-size:9.5px;" onclick="simulateMasterclassRun(true)" title="Test 100% Run">🌟 Sim 100%</button>
+            <button type="button" class="btn btn-outline" style="padding:3px 7px; font-size:9.5px;" onclick="simulateMasterclassRun(false)" title="Test Mistakes">🔧 Sim Mistakes</button>
             <button type="button" class="btn btn-amber" id="fix-btn" style="display:none;" onclick="practiceMistakesOnly()">
-              🔧 Fix Problem Notes Only
+              🔧 Fix Problem Notes
             </button>
             <button type="button" class="btn btn-outline" id="reset-notes-btn" style="display:none;" onclick="resetFullExercise()">
               ↩ Full Exercise
@@ -296,13 +386,20 @@
             <span id="count-lbl" style="margin-left: auto; font-size: 10.5px; font-weight: 800; color: var(--amber); display: none;">Count: 1</span>
           </div>
 
-          <!-- SVG SHEET MUSIC -->
+          <!-- SVG SHEET MUSIC (PRE-POPULATED FALLBACK + DYNAMIC) -->
           <div class="score-card">
             <div style="font-size: 9.5px; color: var(--muted); margin-bottom: 2px; display:flex; justify-content:space-between;">
-              <span>💡 🟢 In Tune · 🟡 Flat/Sharp · 🔴 Wrong Note</span>
+              <span>💡 🟢 In Tune · 🟡 Flat/Sharp · 🔴 Wrong Note (Click any note head to play!)</span>
               <span id="pos-lbl" style="font-weight:800; color:#5b21b6;">Position: 1st</span>
             </div>
-            <svg id="sheet-svg" viewBox="0 0 700 150" style="width: 100%; height: auto; min-width: 460px;"></svg>
+            <svg id="sheet-svg" viewBox="0 0 700 148" style="width: 100%; height: auto; min-width: 460px;">
+              <line x1="15" y1="45" x2="685" y2="45" stroke="#57534e" stroke-width="1.2"/>
+              <line x1="15" y1="60" x2="685" y2="60" stroke="#57534e" stroke-width="1.2"/>
+              <line x1="15" y1="75" x2="685" y2="75" stroke="#57534e" stroke-width="1.2"/>
+              <line x1="15" y1="90" x2="685" y2="90" stroke="#57534e" stroke-width="1.2"/>
+              <line x1="15" y1="105" x2="685" y2="105" stroke="#57534e" stroke-width="1.2"/>
+              <text x="20" y="94" font-size="46" font-family="serif" fill="#1c1917">𝄞</text>
+            </svg>
             <div class="bow-wrap">
               <strong id="bow-txt" style="width: 110px;">Bow: Ready</strong>
               <div class="bow-track"><div class="bow-fill" id="bow-fill"></div></div>
@@ -325,16 +422,18 @@
               <span id="pitch-badge" style="font-family: monospace; font-size: 10px; background: #29231e; padding: 2px 6px; border-radius: 3px; color: #fcd34d;">Click any finger to play!</span>
             </div>
             <div class="fb-grid">
-              <div class="fb-hdr" id="fb-hdr"></div>
+              <div class="fb-hdr" id="fb-hdr">
+                <span>Str</span><span>0 (Open)</span><span>1st Finger</span><span>2nd Finger</span><span>3rd Finger</span><span>4th Finger</span>
+              </div>
               <div id="fb-rows"></div>
             </div>
           </div>
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 5px; border-top: 1px solid #e7e0d2; font-size: 10.5px; color: var(--muted);">
-          <button type="button" class="btn btn-outline" data-action="flip" data-val="-1">← Prev Week</button>
+          <button type="button" class="btn btn-outline" onclick="flipPage(-1)">⬅ Flip Prev Week</button>
           <span id="page-num" style="font-family: Georgia, serif; font-style: italic;">Book 1 · Week 1</span>
-          <button type="button" class="btn btn-outline" data-action="flip" data-val="1">Next Week →</button>
+          <button type="button" class="btn btn-outline" onclick="flipPage(1)">Flip Next Week ➔</button>
         </div>
       </section>
     </main>
@@ -394,6 +493,9 @@
   </footer>
 
 <script>
+// ============================================================================
+// 1. PITCHES, ENHARMONICS & 6 POSITIONS
+// ============================================================================
 const FREQS = {
   "G3":196.0, "G#3":207.65, "Ab3":207.65, "A3":220.0, "A#3":233.08, "Bb3":233.08, "B3":246.94,
   "C4":261.63, "C#4":277.18, "Db4":277.18, "D4":293.66, "D#4":311.13, "Eb4":311.13, "E4":329.63,
@@ -449,6 +551,9 @@ function findNoteInstruction(pitch) {
   return `note ${pitch}`;
 }
 
+// ============================================================================
+// 2. CURRICULUM DATABASE (BOOK 1 W1–24 & BOOK 2 W25–48)
+// ============================================================================
 const B1_RAW = [
   [1, 1, 60, "Pizzicato on Open Strings", "Stand in playing position and pluck open strings A, E, D, G.", ["1.1|Pluck A and E|A4,A4,A4,A4,E5,E5,E5,E5,A4,E5,A4", "1.2|Pluck D and G|D4,D4,D4,D4,G3,G3,G3,G3,D4,G3,D4", "1.3|String Hop|G3,D4,A4,E5,E5,A4,D4,G3"]],
   [2, 1, 60, "Bow Hold & Rhythm with Pizzicato", "Relaxed bow hold on pencil and bow; count quarter, half and whole notes.", ["2.1|Quarter, Half & Whole Notes|A4,A4,A4,A4,E5,E5,A4", "2.2|Pluck and Rest|A4,E5,A4,E5,A4", "2.3|Rhythm on All Strings|G3,G3,D4,D4,A4,A4,E5"]],
@@ -558,8 +663,25 @@ B2_RAW.forEach(w => {
   });
 });
 
+const SCALE_NOTES = {
+  "C": ["C4","D4","E4","F4","G4","A4","B4","C5","D5","E5","F5","G5","A5","B5","C6"],
+  "G": ["G3","A3","B3","C4","D4","E4","F#4","G4","A4","B4","C5","D5","E5","F#5","G5"],
+  "D": ["D4","E4","F#4","G4","A4","B4","C#5","D5","E5","F#5","G5","A5","B5","C#6","D6"],
+  "A": ["A3","B3","C#4","D4","E4","F#4","G#4","A4","B4","C#5","D5","E5","F#5","G#5","A5"],
+  "E": ["E4","F#4","G#4","A4","B4","C#5","D#5","E5","F#5","G#5","A5","B5","C#6","D#6","E6"],
+  "B": ["B3","C#4","D#4","E4","F#4","G#4","A#4","B4","C#5","D#5","E5","F#5","G#5","A#5","B5"],
+  "F#": ["F#4","G#4","A#4","B4","C#5","D#5","F5","F#5","G#5","A#5","B5","C#6","D#6","F6","F#6"],
+  "Db": ["Db4","Eb4","F4","Gb4","Ab4","Bb4","C5","Db5","Eb5","F5","Gb5","Ab5","Bb5","C6","Db6"],
+  "Ab": ["Ab3","Bb3","C4","Db4","Eb4","F4","G4","Ab4","Bb4","C5","Db5","Eb5","F5","G5","Ab5"],
+  "Eb": ["Eb4","F4","G4","Ab4","Bb4","C5","D5","Eb5","F5","G5","Ab5","Bb5","C6","D6","Eb6"],
+  "Bb": ["Bb3","C4","D4","Eb4","F4","G4","A4","Bb4","C5","D5","Eb5","F5","G5","A5","Bb5"],
+  "F": ["F4","G4","A4","Bb4","C5","D5","E5","F5","G5","A5","Bb5","C6","D6","E6","F6"],
+  "C#": ["C#4","D#4","E4","F#4","G#4","A4","B4","C#5","D#5","E5","F#5","G#5","A5","B5","C#6"],
+  "G#": ["G#3","A#3","B3","C#4","D#4","E4","F#4","G#4","A#4","B4","C#5","D#5","E5","F#5","G#5"]
+};
+
 // ============================================================================
-// 3. STATE & AUDIO ENGINE
+// 3. STATE, SYNTH AUDIO & EMOTIONAL VOICE ENGINE
 // ============================================================================
 let curBook = 1, curIdx = 0, curEx = 0, curPos = 1;
 let bpm = 60, sig = 4, sub = 1, isLoop = true, isPlaying = false, playTimers = [];
@@ -598,16 +720,25 @@ function playClick(type = "down") {
   } catch(e){}
 }
 
+// Synthesized Paper-Rustle Noise Buffer for Realistic Page Flip
 function playPaperTurnSound() {
   try {
     const ctx = getCtx(), now = ctx.currentTime;
-    const osc = ctx.createOscillator(), flt = ctx.createBiquadFilter(), g = ctx.createGain();
-    osc.type = "white"; osc.frequency.setValueAtTime(300, now);
-    flt.type = "bandpass"; flt.frequency.setValueAtTime(950, now); flt.Q.value = 1.2;
-    g.gain.setValueAtTime(0.08, now);
-    g.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-    osc.connect(flt); flt.connect(g); g.connect(ctx.destination);
-    osc.start(now); osc.stop(now + 0.18);
+    const bufferSize = ctx.sampleRate * 0.22;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.sin((i / bufferSize) * Math.PI);
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    const flt = ctx.createBiquadFilter();
+    flt.type = "bandpass"; flt.frequency.setValueAtTime(1100, now); flt.Q.value = 1.4;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.18, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.21);
+    noise.connect(flt); flt.connect(g); g.connect(ctx.destination);
+    noise.start(now);
   } catch(e){}
 }
 
@@ -640,7 +771,10 @@ function pickGenderVoice(gender) {
   const pool = availableVoices.filter(v => v.lang && v.lang.toLowerCase().startsWith("en"));
   const voices = pool.length ? pool : availableVoices;
   if (!voices.length) return null;
-  const targets = gender === "female" ? ["female", "zira", "samantha", "aria", "jenny", "sonia", "susan", "clara"] : ["male", "david", "mark", "daniel", "alex", "ryan", "maestro"];
+  // Prioritize Online Natural Neural voices first!
+  const targets = gender === "female"
+    ? ["aria", "jenny", "sonia", "samantha", "natural", "zira", "victoria", "google uk english female"]
+    : ["guy", "ryan", "christopher", "eric", "daniel", "david", "mark", "google uk english male"];
   for (const kw of targets) {
     const found = voices.find(v => v.name.toLowerCase().includes(kw));
     if (found) return found;
@@ -648,7 +782,8 @@ function pickGenderVoice(gender) {
   return voices[0];
 }
 
-function speakAI(htmlText, onDoneCallback = null) {
+// Emotional Prosody Engine: adjusts pitch & cadence based on mood ('excited', 'warm', 'calm')
+function speakAI(htmlText, onDoneCallback = null, emotion = "calm") {
   const nameStr = trainerGender === "female" ? "👩 <strong>Clara:</strong> " : "👨 <strong>Maestro:</strong> ";
   document.getElementById("ai-speech-txt").innerHTML = nameStr + htmlText;
 
@@ -662,8 +797,14 @@ function speakAI(htmlText, onDoneCallback = null) {
     const u = new SpeechSynthesisUtterance(cleanText);
     const chosenVoice = pickGenderVoice(trainerGender);
     if (chosenVoice) u.voice = chosenVoice;
-    u.pitch = trainerGender === "female" ? 1.1 : 0.86;
-    u.rate = 1.03;
+
+    let basePitch = trainerGender === "female" ? 1.12 : 0.88;
+    let baseRate = 1.02;
+    if (emotion === "excited") { basePitch += 0.08; baseRate = 1.07; }
+    else if (emotion === "warm") { basePitch -= 0.03; baseRate = 0.96; }
+
+    u.pitch = basePitch;
+    u.rate = baseRate;
 
     lockMicForMs(3500);
     u.onstart = () => { lockMicForMs(4000); };
@@ -682,17 +823,27 @@ function speakAI(htmlText, onDoneCallback = null) {
 }
 
 // ============================================================================
-// 4. FLIP-BOOK & 3-STAGE MASTERCLASS
+// 4. REALISTIC 3D PAGE-FLIP & MASTERCLASS WORKFLOW
 // ============================================================================
 function flipPage(delta) {
   playPaperTurnSound();
-  const spread = document.getElementById("book-spread-elem");
-  spread.style.transform = delta > 0 ? "rotateY(-10deg) scale(0.99)" : "rotateY(10deg) scale(0.99)";
+  const leaf = document.getElementById("page-turn-leaf");
+  if (leaf) {
+    leaf.className = "page-turn-leaf";
+    void leaf.offsetWidth; // Force reflow so animation restarts cleanly
+    leaf.classList.add(delta > 0 ? "flip-next" : "flip-prev");
+  }
   setTimeout(() => {
-    spread.style.transform = "rotateY(0deg) scale(1)";
     stepWeek(delta);
-  }, 280);
+  }, 240);
 }
+
+// Allow Left/Right Arrow keys on laptop to flip pages!
+window.addEventListener("keydown", function(e) {
+  if (document.activeElement && document.activeElement.tagName === "INPUT") return;
+  if (e.key === "ArrowRight") flipPage(1);
+  else if (e.key === "ArrowLeft") flipPage(-1);
+});
 
 function stepWeek(delta) {
   const list = BOOK_DATA[curBook];
@@ -742,12 +893,12 @@ function startMasterclass() {
   const firstNote = activeNotes[0];
   const lastNote = activeNotes[activeNotes.length - 1];
 
-  const briefMsg = `Let's play <strong>${exTitle}</strong> in <strong>${posName}</strong>. Focus on: ${w.goal} Start on <strong>${firstNote}</strong> and play all ${activeNotes.length} notes through to <strong>${lastNote}</strong>. I will listen quietly without interrupting and review your performance at the end. Ready? Let's begin!`;
+  const briefMsg = `Wonderful, let's play <strong>${exTitle}</strong> together in <strong>${posName}</strong>! Remember our goal: ${w.goal} Set your bow for <strong>${firstNote}</strong> and play all ${activeNotes.length} notes smoothly through to <strong>${lastNote}</strong>. I will listen quietly and share my thoughts at the end. Take a deep breath, and begin!`;
 
   speakAI(briefMsg, () => {
     if (aiStage !== "briefing") return;
     beginListeningStage();
-  });
+  }, "calm");
 }
 
 function beginListeningStage() {
@@ -757,7 +908,7 @@ function beginListeningStage() {
   heldFrames = 0;
   document.getElementById("ai-console").className = "ai-console listening";
   document.getElementById("ai-stage-lbl").textContent = `Stage 2/3: Listening (1/${activeNotes.length})`;
-  document.getElementById("ai-speech-txt").innerHTML = `🤫 <strong>Listening Silently:</strong> Play each note on your violin (or tap the fingerboard). The cursor advances automatically until you finish all ${activeNotes.length} notes!`;
+  document.getElementById("ai-speech-txt").innerHTML = `🤫 <strong>Listening Silently:</strong> Play each note on your violin (or click the fingerboard notes below). The cursor moves forward automatically until you finish all ${activeNotes.length} notes!`;
   moveCursorToIdx(0, false);
 }
 
@@ -805,29 +956,43 @@ function finishAndDeliverReview() {
   const fixBtn = document.getElementById("fix-btn");
   if (problemNotesList.length > 0) {
     fixBtn.style.display = "inline-flex";
-    fixBtn.textContent = `🔧 Practice ${problemNotesList.length} Problem Note${problemNotesList.length > 1 ? 's' : ''}`;
+    fixBtn.textContent = `🔧 Fix ${problemNotesList.length} Problem Note${problemNotesList.length > 1 ? 's' : ''}`;
   } else {
     fixBtn.style.display = "none";
   }
 
   if (wrongNotes.length === 0 && flatSharpNotes.length === 0) {
     document.getElementById("ai-console").className = "ai-console good";
-    speakAI(`🌟 <strong>Bravo! 100% Accuracy!</strong> Every single one of the ${total} notes was spot on. Your intonation in ${POS_DATA[curPos].name} was pristine. Excellent work!`);
+    speakAI(`🌟 <strong>Bravo! Magnificent playing!</strong> You scored a full 100%! Every single one of those ${total} notes rang out clearly and in tune. I am so proud of your hand frame in ${POS_DATA[curPos].name}!`, null, "excited");
     return;
   }
 
   document.getElementById("ai-console").className = "ai-console fix";
-  let feedback = [`Good run! You scored <strong>${scorePct}%</strong> (${okNotes.length} of ${total} notes clean).`];
+  let feedback = [` lovely effort! You scored <strong>${scorePct}%</strong>, with ${okNotes.length} out of ${total} notes right on target.`];
   if (wrongNotes.length > 0) {
     const err = wrongNotes[0];
-    feedback.push(`On <strong>Note ${err.idx}</strong>, I heard <strong>${err.played}</strong> instead of <strong>${err.target}</strong> (${findNoteInstruction(err.target)}).`);
+    feedback.push(`Let's gently fix <strong>Note ${err.idx}</strong>: I heard <strong>${err.played}</strong>, but we want <strong>${err.target}</strong> (${findNoteInstruction(err.target)}).`);
   }
   if (flatSharpNotes.length > 0) {
     const fs = flatSharpNotes[0];
-    feedback.push(`For intonation, <strong>Note ${fs.idx} (${fs.target})</strong> was slightly ${fs.status}.`);
+    feedback.push(`Also listen closely to <strong>Note ${fs.idx} (${fs.target})</strong>—it was just a hair ${fs.status}.`);
   }
-  feedback.push(`Click <strong>"🔧 Practice Problem Notes"</strong> to isolate those tricky spots!`);
-  speakAI(feedback.join(" "));
+  feedback.push(`Click <strong>"🔧 Fix Problem Notes"</strong> so we can polish those exact notes together!`);
+  speakAI(feedback.join(" "), null, "warm");
+}
+
+function simulateMasterclassRun(perfect) {
+  stopPlayAlong();
+  aiStage = "listening";
+  drawStaff();
+  activeNotes.forEach((pt, idx) => {
+    if (perfect) recordSilentNoteResult(idx, pt, pt, 0);
+    else {
+      if (idx === 1) recordSilentNoteResult(idx, pt, pt === "A4" ? "B4" : "A4", 0);
+      else if (idx === 3) recordSilentNoteResult(idx, pt, pt, -7.2);
+      else recordSilentNoteResult(idx, pt, pt, 0);
+    }
+  });
 }
 
 function practiceMistakesOnly() {
@@ -850,6 +1015,9 @@ function resetFullExercise() {
   moveCursorToIdx(0, false);
 }
 
+// ============================================================================
+// 5. STUDENT Q&A BRAIN (VOICE + TEXT)
+// ============================================================================
 function askTeacherQ() {
   const qBox = document.getElementById("qa-txt");
   const q = qBox.value.trim();
@@ -860,40 +1028,46 @@ function askTeacherQ() {
 
 function toggleVoiceQ() {
   if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
-    speakAI("Speech recognition is not supported in this browser. Please type your question.");
+    speakAI("Voice recognition isn't supported in this browser, my friend—just type your question in the box!", null, "warm");
     return;
   }
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
   const rec = new SpeechRec();
-  speakAI("Listening... Speak your question now.");
+  speakAI("I'm listening! Ask me your violin question now.", null, "calm");
   rec.onresult = (e) => {
     const transcript = e.results[0][0].transcript;
     document.getElementById("qa-txt").value = transcript;
     processStudentQuestion(transcript);
   };
-  rec.onerror = () => { speakAI("I didn't catch that. Please type your question."); };
+  rec.onerror = () => { speakAI("I couldn't quite hear that—try typing your question below!", null, "warm"); };
   rec.start();
 }
 
 function processStudentQuestion(q) {
   const lower = q.toLowerCase();
-  let ans = "";
-  if (lower.includes("scratchy") || lower.includes("tone") || lower.includes("sound")) {
-    ans = "A scratchy bow sound usually means your bow is too close to the bridge or you're pressing too hard. Keep your bow strictly in the middle lane between the bridge and fingerboard with a soft thumb!";
-  } else if (lower.includes("3rd pos") || lower.includes("third position") || lower.includes("shift")) {
-    ans = "To find 3rd position, play D on the A string with your 3rd finger in 1st position, then slide your whole hand and thumb up so your 1st finger takes over that exact same D!";
+  if (lower.includes("scratchy") || lower.includes("tone") || lower.includes("sound") || lower.includes("crooked")) {
+    speakAI("Ah, a scratchy sound happens to everyone! It usually means your bow drifted too close to the fingerboard or your right thumb is squeezing. Try the 'Bow Highway' game: keep your bow parallel right in the middle lane between the bridge and fingerboard, and let your right elbow float!", null, "warm");
+  } else if (lower.includes("3rd") || lower.includes("third") || lower.includes("shift")) {
     setPos(3);
+    speakAI("Here is the secret to 3rd position! First play D on the A string with your 3rd finger in 1st position. Then release your finger weight and glide your whole hand and thumb up together so your 1st finger lands on that exact same D! Look at the fingerboard on the right—I just switched it to 3rd position for you!", null, "excited");
+  } else if (lower.includes("5th") || lower.includes("fifth")) {
+    setPos(5);
+    speakAI("In 5th position, your 1st finger goes where your 3rd finger was in 3rd position, and your 3rd finger plays the sparkling octave harmonic of the open string! Move your thumb slightly under the neck heel so your fingers can reach comfortably.", null, "excited");
   } else if (lower.includes("vibrato")) {
-    ans = "For vibrato, wave your forearm from the wrist like polishing a window. Then, place your 2nd finger in 3rd position and gently roll your fingertip toward the scroll and back.";
     setPos(3);
+    speakAI("Vibrato gives your violin a warm, singing voice! Rest your palm gently against the violin ribs in 3rd position, and let your fingertip rock slightly back toward the scroll and return. Practise 2 slow, even rocks per beat at 60 BPM!", null, "warm");
+  } else if (lower.includes("low 2") || lower.includes("second finger")) {
+    speakAI("Low 2nd finger means placing your 2nd finger right next to your 1st finger so they touch—like playing C natural on the A string or F natural on the D string! High 2nd finger sits next to your 3rd finger.", null, "calm");
+  } else if (lower.includes("play") || lower.includes("demo") || lower.includes("hear")) {
+    speakAI("Of course! Listen closely to the rhythm and intonation as I play this exercise for you.", () => { startPlayAlong(); }, "excited");
   } else {
-    ans = `That's a great question! For "${q}", always ensure your left wrist remains straight and your posture relaxed. Practise slowly with a tuner.`;
+    const firstPt = activeNotes[0];
+    speakAI(`Great question about "${q}"! For this exercise in ${POS_DATA[curPos].name}, keep your left thumb soft and start on ${firstPt} (${findNoteInstruction(firstPt)}). Would you like me to play a demo for you?`, null, "warm");
   }
-  speakAI(ans);
 }
 
 // ============================================================================
-// 5. VIOLIN PITCH DETECTOR (NSDF)
+// 6. STUDIO-GRADE VIOLIN PITCH DETECTOR (NSDF)
 // ============================================================================
 function detectViolinPitchNSDF(buf, sampleRate) {
   let rms = 0;
@@ -936,7 +1110,7 @@ function detectViolinPitchNSDF(buf, sampleRate) {
 }
 
 // ============================================================================
-// 6. BOOK, WEEK & EXERCISE RENDERING
+// 7. BOOK, WEEK, SCALES & EXERCISE RENDERING
 // ============================================================================
 function switchBook(bNum) {
   curBook = bNum;
@@ -966,7 +1140,7 @@ function selectWeek(idx) {
   document.getElementById("page-num").textContent = `${w.badge} (${curIdx + 1} of ${list.length})`;
 
   document.getElementById("chk-box").innerHTML = w.checks.map(c => `
-    <label class="chk-item"><input type="checkbox"><span>${c}</span></label>
+    <label class="chk-item"><input type="checkbox" onchange="updChecks()"><span>${c}</span></label>
   `).join("");
   updChecks();
 
@@ -1005,6 +1179,32 @@ function loadEx(eIdx) {
   moveCursorToIdx(0, false);
 }
 
+function loadQuickScale(val) {
+  if (!val) return;
+  stopPlayAlong();
+  const [root, type, posStr, mp3Base] = val.split("|");
+  setPos(parseInt(posStr, 10)); setBpm(80);
+  fullExerciseNotes = (SCALE_NOTES[root] || SCALE_NOTES["C"]).slice();
+  activeNotes = fullExerciseNotes.slice();
+  aiStepIdx = 0; aiStage = "idle";
+  document.getElementById("ex-title").textContent = `${root} ${type === 'maj' ? 'Major' : 'Minor'} Scale (Two Octaves)`;
+  setMp3Track(`audio2/${mp3Base}${type === 'maj' ? '_scale.mp3' : '_harmonic.mp3'}`);
+  drawStaff(); moveCursorToIdx(0, true);
+}
+
+function loadQuickPiece(val) {
+  if (!val) return;
+  stopPlayAlong();
+  const [ttl, posStr, bpmStr, mp3Path, csv] = val.split("|");
+  setPos(parseInt(posStr, 10)); setBpm(parseInt(bpmStr, 10));
+  fullExerciseNotes = csv.split(",");
+  activeNotes = fullExerciseNotes.slice();
+  aiStepIdx = 0; aiStage = "idle";
+  document.getElementById("ex-title").textContent = ttl;
+  setMp3Track(mp3Path);
+  drawStaff(); moveCursorToIdx(0, true);
+}
+
 function setMp3Track(path) {
   document.getElementById("mp3-path").textContent = path;
   const player = document.getElementById("mp3-player");
@@ -1014,7 +1214,7 @@ function setMp3Track(path) {
 }
 
 // ============================================================================
-// 7. FINGERBOARD & SHEET MUSIC (INITIALIZED ON LOAD)
+// 8. FINGERBOARD & SHEET MUSIC RENDERING
 // ============================================================================
 function setPos(p) {
   curPos = p;
@@ -1108,6 +1308,12 @@ function moveCursorToIdx(idx, playSynth = true) {
   }
   document.getElementById("bow-fill").style.width = idx % 2 === 0 ? "85%" : "20%";
   document.getElementById("bow-txt").textContent = idx % 2 === 0 ? "Bow: ∏ Down" : "Bow: V Up";
+  document.getElementById("str-lbl").textContent = `Target: ${pt}`;
+
+  document.querySelectorAll(".fb-cell").forEach(c => c.classList.remove("active"));
+  const targetCell = document.getElementById(`cell-${normNote(pt)}`);
+  if (targetCell) targetCell.classList.add("active");
+
   if (playSynth) playViolin(pt, 0.45);
 }
 
@@ -1119,7 +1325,7 @@ mp3Player.addEventListener("timeupdate", () => {
 });
 
 // ============================================================================
-// 8. AUDIO & METRONOME
+// 9. AUDIO, METRONOME, DRONES & TIMERS
 // ============================================================================
 function togglePlayAlong() { isPlaying ? stopPlayAlong() : startPlayAlong(); }
 function stopPlayAlong() {
@@ -1197,13 +1403,47 @@ function changeSig(val) {
   document.getElementById("beat-dots").innerHTML = h;
   drawStaff();
 }
+
+function toggleDrone(name, freq) {
+  const ctx = getCtx();
+  document.querySelectorAll(".dock-box .drone-btn").forEach(b => {
+    if (b.id && b.id.startsWith("dr-")) b.classList.remove("active");
+  });
+  if (droneOsc) {
+    droneOsc.stop(); droneOsc = null;
+    if (activeDrone === name) { activeDrone = null; return; }
+  }
+  activeDrone = name;
+  const osc = ctx.createOscillator(), g = ctx.createGain();
+  osc.type = "sawtooth"; osc.frequency.value = freq; g.gain.value = 0.05;
+  osc.connect(g); g.connect(ctx.destination); osc.start();
+  droneOsc = osc;
+  const btn = document.getElementById(`dr-${name}`);
+  if (btn) btn.classList.add("active");
+}
+
+let tmrSec = 900, tmrInt = null;
+function fmtT(s) { return `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`; }
 function setTimer(s, lbl) {
+  clearInterval(tmrInt); tmrInt = null; tmrSec = s;
   document.getElementById("tmr-disp").textContent = fmtT(s);
   document.getElementById("tmr-lbl").textContent = lbl;
+  document.getElementById("tmr-btn").textContent = "Start";
+}
+function toggleTimer() {
+  const tBtn = document.getElementById("tmr-btn");
+  if (tmrInt) { clearInterval(tmrInt); tmrInt = null; tBtn.textContent = "Resume"; }
+  else {
+    playClick("down"); tBtn.textContent = "Pause";
+    tmrInt = setInterval(() => {
+      if (tmrSec > 0) { tmrSec--; document.getElementById("tmr-disp").textContent = fmtT(tmrSec); }
+      else { clearInterval(tmrInt); tmrInt = null; tBtn.textContent = "Done!"; playViolin("E5", 0.5); }
+    }, 1000);
+  }
 }
 
 // ============================================================================
-// 9. MIC LISTENER
+// 10. LIVE MIC TUNER & SILENT MASTERCLASS OBSERVER
 // ============================================================================
 let micStream = null, micInt = null;
 async function toggleMic() {
@@ -1253,27 +1493,16 @@ function setTrainer(gender) {
   trainerGender = gender;
   document.getElementById("tr-fem").classList.toggle("active", gender === "female");
   document.getElementById("tr-male").classList.toggle("active", gender === "male");
-  speakAI(gender === "female" ? "Hello! I am Clara, your violin teacher. Click Start AI Masterclass when you are ready!" : "Greetings! I am Maestro, your violin instructor. Click Start AI Masterclass and let's begin!");
+  speakAI(
+    gender === "female"
+      ? "Hello! I am Clara, your violin coach. Click Start AI Masterclass whenever you're ready, or ask me any question below!"
+      : "Greetings! I am Maestro, your violin instructor. Click Start AI Masterclass or ask me anything about your violin technique!",
+    null,
+    "excited"
+  );
 }
 
-// ============================================================================
-// 10. UNIVERSAL EVENT DELEGATION
-// ============================================================================
-document.addEventListener("click", function(e) {
-  const chk = e.target.closest("#chk-box input");
-  if (chk) { updChecks(); return; }
-
-  const btn = e.target.closest("[data-action]");
-  if (!btn) return;
-  const act = btn.getAttribute("data-action");
-  const val = btn.getAttribute("data-val");
-
-  if (act === "book") switchBook(parseInt(val, 10));
-  else if (act === "week") selectWeek(parseInt(val, 10));
-  else if (act === "flip") flipPage(parseInt(val, 10));
-});
-
-// Initialize on load
+// Initialize immediately on load!
 switchBook(1);
 </script>
 </body>
