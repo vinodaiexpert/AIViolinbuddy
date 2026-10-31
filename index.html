@@ -191,6 +191,21 @@
   .note-ok { fill: var(--emerald) !important; stroke: var(--emerald) !important; }
   .note-flat { fill: #eab308 !important; stroke: #ca8a04 !important; }
   .note-err { fill: var(--rose) !important; stroke: var(--rose) !important; }
+
+/* Live camera bubble: shows the student on screen only; nothing is recorded */
+#cam-bubble{position:fixed;right:18px;bottom:120px;width:300px;aspect-ratio:4/3;z-index:9000;display:none;
+  border-radius:18px;overflow:hidden;background:#000;box-shadow:0 10px 30px rgba(0,0,0,.45);border:3px solid #f59e0b;
+  touch-action:none;cursor:grab;user-select:none}
+#cam-bubble.on{display:block}
+#cam-bubble.dragging{cursor:grabbing}
+#cam-bubble video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:block;pointer-events:none}
+#cam-bubble .cam-tools{position:absolute;top:6px;right:6px;display:flex;gap:4px;opacity:.85}
+#cam-bubble .cam-tools button{border:0;border-radius:8px;background:rgba(0,0,0,.55);color:#fff;font:700 12px system-ui;
+  padding:4px 7px;cursor:pointer}
+#cam-bubble .cam-tools button:hover{background:rgba(0,0,0,.8)}
+#cam-bubble .cam-live{position:absolute;left:8px;top:8px;background:rgba(220,38,38,.9);color:#fff;font:700 10px system-ui;
+  padding:2px 7px;border-radius:999px;letter-spacing:.04em}
+@media (max-width:700px){#cam-bubble{width:170px;bottom:90px;right:10px}}
 </style>
 </head>
 <body>
@@ -466,6 +481,7 @@
       <div class="tuner-bar"><div class="tuner-ndl" id="tuner-ndl"></div></div>
       <div style="display: flex; justify-content: space-between; align-items: center; gap: 5px;">
         <button type="button" class="btn btn-dark" id="mic-btn" onclick="toggleMic()">🎙️ Mic Tuner</button>
+        <button type="button" class="btn btn-dark" id="cam-btn" onclick="toggleCamera()" title="Show the laptop camera on screen (nothing is recorded or uploaded)">📷 Camera</button>
         <div style="display: flex; align-items: center; gap: 3px; font-size: 9px; color: #a8a29e;">
           <span>Gate:</span> <input type="range" id="gate-rng" min="1" max="10" value="3" style="width: 48px; accent-color: var(--emerald-br);">
         </div>
@@ -1798,6 +1814,80 @@ function setTrainer(gender) {
 
 // Initialize immediately on load!
 switchBook(1);
+</script>
+
+<div id="cam-bubble" aria-label="Live camera">
+  <video id="cam-video" autoplay playsinline muted></video>
+  <span class="cam-live">● LIVE</span>
+  <div class="cam-tools">
+    <button type="button" onclick="resizeCamera(-1)" title="Smaller">−</button>
+    <button type="button" onclick="resizeCamera(1)" title="Bigger">+</button>
+    <button type="button" onclick="toggleCamera()" title="Turn camera off">✕</button>
+  </div>
+</div>
+<script>
+// ============================================================================
+// LIVE CAMERA BUBBLE: shows the student on screen for lessons and demos.
+// Video only (the mic pitch detection is untouched). Nothing is recorded or
+// uploaded; stopping the camera releases it immediately.
+// ============================================================================
+let camStream = null;
+const CAM_WIDTHS = [200, 300, 420, 560];
+let camSize = 1;
+
+async function toggleCamera() {
+  const bubble = document.getElementById("cam-bubble"), btn = document.getElementById("cam-btn"), vid = document.getElementById("cam-video");
+  if (camStream) {
+    camStream.getTracks().forEach(t => t.stop()); camStream = null;
+    vid.srcObject = null; bubble.classList.remove("on"); btn.textContent = "📷 Camera";
+    return;
+  }
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" }, audio: false });
+    vid.srcObject = camStream;
+    bubble.classList.add("on"); btn.textContent = "⏹ Camera";
+    if (window.innerWidth > 700) bubble.style.width = CAM_WIDTHS[camSize] + "px";
+  } catch (e) {
+    camStream = null;
+    btn.textContent = "📷 Allow Camera";
+    alert("The camera couldn't start. Please allow camera access for this site in your browser settings, and close other apps that are using the camera.");
+  }
+}
+
+function resizeCamera(step) {
+  camSize = Math.max(0, Math.min(CAM_WIDTHS.length - 1, camSize + step));
+  const bubble = document.getElementById("cam-bubble");
+  bubble.style.width = Math.min(CAM_WIDTHS[camSize], window.innerWidth - 20) + "px";
+  keepCameraOnScreen();
+}
+
+function keepCameraOnScreen() {
+  const b = document.getElementById("cam-bubble"), r = b.getBoundingClientRect();
+  if (!b.style.left) return;
+  b.style.left = Math.max(0, Math.min(window.innerWidth - r.width, r.left)) + "px";
+  b.style.top = Math.max(0, Math.min(window.innerHeight - r.height, r.top)) + "px";
+}
+
+// Drag the bubble anywhere with mouse or finger.
+(function () {
+  const b = document.getElementById("cam-bubble");
+  let sx = 0, sy = 0, ox = 0, oy = 0, dragging = false;
+  b.addEventListener("pointerdown", e => {
+    if (e.target.closest("button")) return;
+    const r = b.getBoundingClientRect();
+    dragging = true; sx = e.clientX; sy = e.clientY; ox = r.left; oy = r.top;
+    b.style.left = ox + "px"; b.style.top = oy + "px"; b.style.right = "auto"; b.style.bottom = "auto";
+    b.classList.add("dragging"); b.setPointerCapture(e.pointerId);
+  });
+  b.addEventListener("pointermove", e => {
+    if (!dragging) return;
+    b.style.left = (ox + e.clientX - sx) + "px"; b.style.top = (oy + e.clientY - sy) + "px";
+    keepCameraOnScreen();
+  });
+  const end = () => { dragging = false; b.classList.remove("dragging"); };
+  b.addEventListener("pointerup", end); b.addEventListener("pointercancel", end);
+  window.addEventListener("resize", keepCameraOnScreen);
+})();
 </script>
 </body>
 </html>
