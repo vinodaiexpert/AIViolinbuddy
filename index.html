@@ -513,8 +513,9 @@ function normNote(n) { return ENHARMONIC[n] || n; }
 function getNoteFreq(n) { return FREQS[normNote(n)] || 440; }
 function isSamePitchClass(played, target) {
   if (!played || !target) return false;
+  // Same note in the same octave only (an octave too high or low is a wrong note).
   const ratio = getNoteFreq(played) / getNoteFreq(target);
-  return Math.abs(ratio - 1.0) < 0.035 || Math.abs(ratio - 2.0) < 0.04 || Math.abs(ratio - 0.5) < 0.03;
+  return Math.abs(ratio - 1.0) < 0.02;
 }
 
 const Y_MAP = {
@@ -698,6 +699,7 @@ let runResults = [];
 let problemNotesList = [];
 let micIgnoreUntil = 0;
 let heldNoteName = null, heldFrames = 0;
+let lastAcceptedName = null, onsetReady = true, bowDipSeen = false, bowWatchInt = null;
 
 function lockMicForMs(ms) {
   micIgnoreUntil = Math.max(micIgnoreUntil, performance.now() + ms);
@@ -793,7 +795,7 @@ function speakAI(htmlText, onDoneCallback = null, emotion = "calm") {
   }
   try {
     window.speechSynthesis.cancel();
-    const cleanText = htmlText.replace(/<[^>]*>/g, "").replace(/♯/g, " sharp ").replace(/♭/g, " flat ").replace(/∏/g, "down bow").replace(/V/g, "up bow");
+    const cleanText = htmlText.replace(/<[^>]*>/g, "").replace(/♯/g, " sharp ").replace(/♭/g, " flat ").replace(/∏/g, "down bow").replace(/\bV\b/g, "up bow");
     const u = new SpeechSynthesisUtterance(cleanText);
     const chosenVoice = pickGenderVoice(trainerGender);
     if (chosenVoice) u.voice = chosenVoice;
@@ -906,28 +908,31 @@ function beginListeningStage() {
   aiStepIdx = 0;
   runResults = [];
   heldFrames = 0;
+  lastAcceptedName = null; onsetReady = true; bowDipSeen = false;
   document.getElementById("ai-console").className = "ai-console listening";
   document.getElementById("ai-stage-lbl").textContent = `Stage 2/3: Listening (1/${activeNotes.length})`;
   document.getElementById("ai-speech-txt").innerHTML = `🤫 <strong>Listening Silently:</strong> Play each note on your violin (or click the fingerboard notes below). The cursor moves forward automatically until you finish all ${activeNotes.length} notes!`;
   moveCursorToIdx(0, false);
 }
 
-function recordSilentNoteResult(idx, targetPt, playedPt, diffHz) {
+// In tune = within ±20 cents of the written note, the same fairness on every string.
+const TUNE_TOLERANCE_CENTS = 20;
+function recordSilentNoteResult(idx, targetPt, playedPt, diffCents) {
   const noteEl = document.getElementById(`nh-${idx}`);
   let status = "ok";
 
   if (playedPt === "Silence" || !isSamePitchClass(playedPt, targetPt)) {
     status = "wrong";
     if (noteEl) { noteEl.classList.remove("note-on", "note-ok", "note-flat"); noteEl.classList.add("note-err"); }
-  } else if (Math.abs(diffHz) > 5.8) {
-    status = diffHz < 0 ? "flat" : "sharp";
+  } else if (Math.abs(diffCents) > TUNE_TOLERANCE_CENTS) {
+    status = diffCents < 0 ? "flat" : "sharp";
     if (noteEl) { noteEl.classList.remove("note-on", "note-ok", "note-err"); noteEl.classList.add("note-flat"); }
   } else {
     status = "ok";
     if (noteEl) { noteEl.classList.remove("note-on", "note-err", "note-flat"); noteEl.classList.add("note-ok"); }
   }
 
-  runResults[idx] = { idx: idx + 1, target: targetPt, played: playedPt, status, diffHz };
+  runResults[idx] = { idx: idx + 1, target: targetPt, played: playedPt, status, diffCents: Math.round(diffCents) };
 
   if (idx < activeNotes.length - 1) {
     aiStepIdx = idx + 1;
@@ -1449,40 +1454,71 @@ let micStream = null, micInt = null;
 async function toggleMic() {
   const btn = document.getElementById("mic-btn"), txt = document.getElementById("tuner-txt"), ndl = document.getElementById("tuner-ndl");
   if (micStream) {
-    micStream.getTracks().forEach(t => t.stop()); micStream = null; clearInterval(micInt);
+    micStream.getTracks().forEach(t => t.stop()); micStream = null; clearInterval(micInt); clearInterval(bowWatchInt);
     btn.textContent = "🎙️ Mic Tuner"; txt.textContent = "Standby"; ndl.style.left = "50%"; return;
   }
   try {
     const ctx = getCtx();
-    micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: false } });
+    // Echo cancellation and auto-gain blur a sustained violin tone, so turn them off.
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
     const src = ctx.createMediaStreamSource(micStream), an = ctx.createAnalyser();
     an.fftSize = 2048; src.connect(an);
     btn.textContent = "⏹ Stop Mic"; txt.textContent = "Listening...";
     const buf = new Float32Array(an.fftSize);
 
+    // Fast bow-change watcher: a bow change or re-articulation makes the volume
+    // dip for well under 0.1 s, too short for the 140 ms pitch check to see
+    // reliably. Check the loudness of the last ~12 ms every 20 ms instead.
+    const vbuf = new Float32Array(an.fftSize), VWIN = 512;
+    let loudPeak = 0;
+    clearInterval(bowWatchInt);
+    bowWatchInt = setInterval(() => {
+      an.getFloatTimeDomainData(vbuf);
+      let s = 0;
+      for (let i = vbuf.length - VWIN; i < vbuf.length; i++) s += vbuf[i] * vbuf[i];
+      const r = Math.sqrt(s / VWIN);
+      if (r > loudPeak) loudPeak = r;
+      else if (loudPeak > 0.01 && r < loudPeak * 0.45) { bowDipSeen = true; loudPeak = r; }
+    }, 20);
+
     micInt = setInterval(() => {
       if (performance.now() < micIgnoreUntil || ("speechSynthesis" in window && window.speechSynthesis.speaking)) return;
       an.getFloatTimeDomainData(buf);
       const res = detectViolinPitchNSDF(buf, ctx.sampleRate);
-      if (res.freq === -1) return;
+      if (res.freq === -1) {
+        // Silence or a gap between bow strokes: the next sound is a new note.
+        onsetReady = true; heldFrames = 0; heldNoteName = null;
+        return;
+      }
 
       let best = "A4", bf = 440, md = 9999;
       for (const [k, f] of Object.entries(FREQS)) {
         if (Math.abs(res.freq - f) < md) { md = Math.abs(res.freq - f); best = k; bf = f; }
       }
-      const diff = res.freq - bf;
-      ndl.style.left = `${Math.max(8, Math.min(92, 50 + diff * 3))}%`;
-      txt.textContent = `${best} (${Math.round(res.freq)} Hz)`;
+      const cents = 1200 * Math.log2(res.freq / bf);
+      ndl.style.left = `${Math.max(8, Math.min(92, 50 + cents * 0.8))}%`;
+      txt.textContent = `${best} (${Math.round(res.freq)} Hz, ${cents >= 0 ? "+" : ""}${Math.round(cents)}¢)`;
 
       if (aiStage === "listening") {
+        // A bow change (volume dip) also starts a new note, so repeated notes
+        // count. The new stroke must then be heard for 3 fresh frames.
+        if (bowDipSeen) {
+          bowDipSeen = false;
+          if (best === lastAcceptedName) { onsetReady = true; heldFrames = 0; heldNoteName = null; }
+        }
+
         if (best === heldNoteName) heldFrames++;
         else { heldNoteName = best; heldFrames = 1; }
 
+        // Count each note once: a held note is not counted again until the
+        // pitch changes or the player re-bows (silence or volume dip).
+        const isNewNote = best !== lastAcceptedName || onsetReady;
         const targetPt = activeNotes[aiStepIdx];
-        if (heldFrames >= 3) {
+        if (heldFrames >= 3 && isNewNote) {
           heldFrames = 0;
+          lastAcceptedName = best; onsetReady = false; bowDipSeen = false;
           lockMicForMs(350);
-          recordSilentNoteResult(aiStepIdx, targetPt, best, diff);
+          recordSilentNoteResult(aiStepIdx, targetPt, best, cents);
         }
       }
     }, 140);
