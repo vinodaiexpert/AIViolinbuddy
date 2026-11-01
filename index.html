@@ -179,6 +179,8 @@
   .beat-dot { width: 11px; height: 11px; border-radius: 50%; background: #332b24; border: 2px solid #443b34; }
   .beat-dot.down { background: var(--amber-br); transform: scale(1.25); border-color: #fff; }
   .beat-dot.sub { background: var(--emerald-br); transform: scale(1.1); }
+  .mic-level { height: 5px; margin-top: 3px; background: #292524; border-radius: 3px; overflow: hidden; }
+  .mic-level > div { height: 100%; width: 0%; background: #10b981; transition: width .08s linear; }
   .tuner-bar { position: relative; height: 13px; background: linear-gradient(90deg, #e11d48 0%, #f59e0b 35%, #10b981 50%, #f59e0b 65%, #e11d48 100%); border-radius: 3px; overflow: hidden; }
   .tuner-ndl { position: absolute; top: 1px; bottom: 1px; left: 50%; width: 5px; margin-left: -2.5px; background: #14110f; border: 1px solid #fff; transition: left 0.1s; }
   .drone-btn { background: #29231e; color: #d6d3d1; border: 1px solid #443b34; padding: 2px 6px; border-radius: 3px; font-size: 9.5px; font-family: monospace; font-weight: 700; cursor: pointer; }
@@ -479,6 +481,7 @@
     <div class="dock-box">
       <div class="dock-ttl"><span>🎯 Live Mic Tuner & Noise Gate</span><span id="tuner-txt" style="color: var(--emerald-br);">Standby</span></div>
       <div class="tuner-bar"><div class="tuner-ndl" id="tuner-ndl"></div></div>
+      <div class="mic-level" title="Microphone level: this bar should jump when you play"><div id="mic-level-fill"></div></div>
       <div style="display: flex; justify-content: space-between; align-items: center; gap: 5px;">
         <button type="button" class="btn btn-dark" id="mic-btn" onclick="toggleMic()">🎙️ Mic Tuner</button>
         <button type="button" class="btn btn-dark" id="cam-btn" onclick="toggleCamera()" title="Show the laptop camera on screen (nothing is recorded or uploaded)">📷 Camera</button>
@@ -715,6 +718,11 @@ let runResults = [];
 let problemNotesList = [];
 let micIgnoreUntil = 0;
 let heldNoteName = null, heldFrames = 0;
+let micNoiseFloor = 0.004, micLastHeard = 0, listenStartedAt = 0, micWarned = false, coachSpeakingUntil = 0;
+function micGateLevel() {
+  const slider = parseInt(document.getElementById("gate-rng").value, 10) * 0.0015;
+  return Math.max(slider, micNoiseFloor * 2.5);
+}
 let lastAcceptedName = null, onsetReady = true, bowDipSeen = false, bowWatchInt = null;
 
 function lockMicForMs(ms) {
@@ -871,7 +879,7 @@ function speakLines(lines, onDoneCallback = null) {
   });
   liveUtterances = [];
   let i = 0;
-  const finish = () => { micIgnoreUntil = performance.now() + 450; if (onDoneCallback) onDoneCallback(); };
+  const finish = () => { coachSpeakingUntil = 0; micIgnoreUntil = performance.now() + 450; if (onDoneCallback) onDoneCallback(); };
   const next = () => {
     if (run !== speechRun) return;               // a newer speech started
     if (i >= parts.length) return finish();
@@ -882,7 +890,11 @@ function speakLines(lines, onDoneCallback = null) {
     u.pitch = Math.min(1.6, Math.max(0.6, base.p + em.p + lift + (Math.random() - 0.5) * 0.05));
     u.rate = Math.min(1.25, Math.max(0.75, base.r * em.r * (1 + (Math.random() - 0.5) * 0.04)));
     let done = false;
-    const go = () => { if (done) return; done = true; setTimeout(next, part.pause); };
+    // Some browsers never report the end of speech; don't let that stall the lesson.
+    const expectMs = 1500 + part.s.length * 85 / u.rate;
+    coachSpeakingUntil = performance.now() + expectMs;
+    const watchdog = setTimeout(() => go(), expectMs + 1500);
+    const go = () => { if (done) return; done = true; clearTimeout(watchdog); setTimeout(next, part.pause); };
     u.onstart = () => lockMicForMs(5000);
     u.onend = go;
     u.onerror = go;
@@ -1049,6 +1061,7 @@ function startMasterclass() {
   if (aiStage === "briefing" || aiStage === "listening") {
     aiStage = "idle";
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    speechRun++; coachSpeakingUntil = 0;
     document.getElementById("masterclass-btn").textContent = "🎓 Start AI Masterclass (Brief → Play → Review)";
     document.getElementById("ai-stage-lbl").textContent = "Stage: Standby";
     document.getElementById("ai-console").className = "ai-console";
@@ -1081,6 +1094,7 @@ function beginListeningStage() {
   runResults = [];
   heldFrames = 0;
   lastAcceptedName = null; onsetReady = true; bowDipSeen = false;
+  listenStartedAt = performance.now(); micWarned = false;
   document.getElementById("ai-console").className = "ai-console listening";
   document.getElementById("ai-stage-lbl").textContent = `Stage 2/3: Listening (1/${activeNotes.length})`;
   document.getElementById("ai-speech-txt").innerHTML = `🤫 <strong>Listening Silently:</strong> Play each note on your violin (or click the fingerboard notes below). The cursor moves forward automatically until you finish all ${activeNotes.length} notes!`;
@@ -1258,7 +1272,9 @@ function detectViolinPitchNSDF(buf, sampleRate) {
   for (let i = 0; i < buf.length; i++) rms += buf[i] * buf[i];
   rms = Math.sqrt(rms / buf.length);
 
-  const gateLevel = parseInt(document.getElementById("gate-rng").value, 10) * 0.005;
+  // Adapts to the room: just above the measured background noise, so quiet
+  // laptop microphones still work. The Gate slider sets the minimum.
+  const gateLevel = micGateLevel();
   if (rms < gateLevel) return { freq: -1, rms };
 
   const minLag = Math.floor(sampleRate / 1550);
@@ -1650,18 +1666,36 @@ async function toggleMic() {
     // reliably. Check the loudness of the last ~12 ms every 20 ms instead.
     const vbuf = new Float32Array(an.fftSize), VWIN = 512;
     let loudPeak = 0;
+    const levelFill = document.getElementById("mic-level-fill");
     clearInterval(bowWatchInt);
     bowWatchInt = setInterval(() => {
       an.getFloatTimeDomainData(vbuf);
       let s = 0;
       for (let i = vbuf.length - VWIN; i < vbuf.length; i++) s += vbuf[i] * vbuf[i];
       const r = Math.sqrt(s / VWIN);
+      // Background noise level: follows quiet moments quickly, loud ones slowly.
+      micNoiseFloor = r < micNoiseFloor ? r : micNoiseFloor + (r - micNoiseFloor) * 0.0005;
+      micNoiseFloor = Math.max(micNoiseFloor, 0.0003);
+      const gate = micGateLevel();
+      if (r > gate) micLastHeard = performance.now();
+      if (levelFill) {
+        levelFill.style.width = Math.min(100, Math.sqrt(r / 0.15) * 100) + "%";
+        levelFill.style.background = r > gate ? "#10b981" : "#78716c";
+      }
       if (r > loudPeak) loudPeak = r;
-      else if (loudPeak > 0.01 && r < loudPeak * 0.45) { bowDipSeen = true; loudPeak = r; }
+      else if (loudPeak > gate && r < loudPeak * 0.45) { bowDipSeen = true; loudPeak = r; }
     }, 20);
 
     micInt = setInterval(() => {
-      if (performance.now() < micIgnoreUntil || ("speechSynthesis" in window && window.speechSynthesis.speaking)) return;
+      const now = performance.now();
+      if (now < micIgnoreUntil || now < coachSpeakingUntil) return;
+      // Listening but nothing heard for 4 s: say so, instead of waiting silently.
+      if (aiStage === "listening" && !micWarned && now - Math.max(micLastHeard, listenStartedAt) > 4000) {
+        micWarned = true;
+        const nameStr = trainerGender === "female" ? "👩 <strong>Clara:</strong> " : "👨 <strong>Maestro:</strong> ";
+        document.getElementById("ai-speech-txt").innerHTML = nameStr +
+          "🎤 <strong>I can't hear your violin.</strong> Watch the green level bar under the tuner while you play. If it doesn't move, check the microphone: browser permission (🔒 next to the address), the Windows input device, and that no other app is using the mic. If it moves but stays grey, slide the Gate to the left.";
+      }
       an.getFloatTimeDomainData(buf);
       const res = detectViolinPitchNSDF(buf, ctx.sampleRate);
       if (res.freq === -1) {
