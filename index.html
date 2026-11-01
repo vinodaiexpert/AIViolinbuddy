@@ -859,14 +859,14 @@ function speakLines(lines, onDoneCallback = null) {
   const run = ++speechRun;
   try { window.speechSynthesis.cancel(); } catch (e) {}
   const voice = pickGenderVoice(trainerGender);
-  const base = trainerGender === "female" ? { p: 1.06, r: 1.0 } : { p: 0.9, r: 0.98 };
+  const base = trainerGender === "female" ? { p: 1.06, r: 1.06 } : { p: 0.9, r: 1.04 };
 
   const parts = [];
   lines.forEach(l => {
     const sentences = speechText(l.t).match(/[^.!?…]+[.!?…]*/g) || [];
     sentences.forEach((s, i) => {
       s = s.trim();
-      if (s) parts.push({ s, e: l.e || "calm", pause: i === sentences.length - 1 ? (l.pause ?? 260) : 90 });
+      if (s) parts.push({ s, e: l.e || "calm", pause: i === sentences.length - 1 ? (l.pause ?? 150) : 50 });
     });
   });
   liveUtterances = [];
@@ -935,185 +935,72 @@ function listNotes(a) {
 }
 function howMuch(c) { c = Math.abs(c || 0); return c < 30 ? "just a touch" : (c < 40 ? "a little" : "noticeably"); }
 
-// Why was this note off, and what should the student do about it?
-function adviceFor(r) {
+// One short, specific tip for a problem note.
+function tipFor(r) {
   const t = r.target, info = noteInfo(t), T = `<strong>${t}</strong>`;
   if (r.status === "wrong") {
-    if (!r.played || r.played === "Silence") return `I didn't really hear ${T}. Give it a full, confident bow — it's ${info.ins}.`;
+    if (!r.played || r.played === "Silence") return `I didn't hear ${T}.`;
     const d = semitones(r.played, t), P = `<strong>${r.played}</strong>`;
-    if (Math.abs(d) === 12) return `Right note name, but ${d > 0 ? "an octave too high" : "an octave too low"}. ${T} lives on the ${info.string} string — ${info.ins}.`;
-    if (info.low2 && d === 1) return pick([
-      `I heard ${P} instead of ${T}. That's the old high 2nd finger habit! For ${T} your 2nd finger snuggles right up against your 1st finger.`,
-      () => `${T} came out as ${P}. Your 2nd finger went to its high spot — for ${T} it's a low 2, touching finger 1.`]);
-    if (info.high2 && d === -1) return pick([
-      `I heard ${P} instead of ${T}. Your 2nd finger dropped low — for ${T} keep it high, close to where your 3rd finger goes.`,
-      () => `That was ${P}, a half step under ${T}. High 2nd finger for this one — stretch it toward finger 3.`]);
-    if (Math.abs(d) === 1) return pick([
-      `I heard ${P} — one half step ${d > 0 ? "too high" : "too low"}. ${T} is ${info.ins}.`,
-      () => `Close! That was ${P}, just a half step ${d > 0 ? "above" : "below"} ${T}. Try placing ${info.ins} and check it on the tuner.`]);
-    if (Math.abs(d) >= 5) return `That sounded like ${P}, so I think you were on a different string. ${T} is ${info.ins}.`;
-    return `I heard ${P} where ${T} should be. ${T} is ${info.ins}.`;
+    if (Math.abs(d) === 12) return `${T} was an octave ${d > 0 ? "high" : "low"} — use the ${info.string} string.`;
+    if (info.low2 && d === 1) return `${T} came out ${P} — low 2nd finger, touching finger 1.`;
+    if (info.high2 && d === -1) return `${T} came out ${P} — keep 2nd finger high.`;
+    if (Math.abs(d) === 1) return `${T} was a half step ${d > 0 ? "high" : "low"}.`;
+    if (Math.abs(d) >= 5) return `That was ${P} — check the string for ${T}.`;
+    return `I heard ${P}, not ${T}.`;
   }
-  const amt = howMuch(r.diffCents);
-  if (info.finger === 0) return pick([
-    `${T} is an open string, so if it's ${r.status}, it's the violin, not you! Let's tune that string with the tuner.`,
-    () => `Interesting — the open ${info.string} string itself is ${amt} ${r.status}. Turn the fine tuner until the needle sits in the middle.`]);
+  if (info.finger === 0) return `Open ${info.string} is out of tune — tune that string.`;
   if (r.status === "sharp") {
-    if (info.low2) return `${T} was ${amt} sharp — your 2nd finger was creeping toward its high spot. Let it touch your 1st finger.`;
-    if (info.finger === 3) return `${T} was ${amt} sharp. Pull your 3rd finger back a hair. When it's right, the open string next to it rings along in sympathy — listen for that glow.`;
-    if (info.finger === 4) return `${T} was ${amt} sharp — your 4th finger reached a little too far. It should match the next open string exactly.`;
-    return pick([
-      `${T} was ${amt} sharp. Roll your fingertip back toward the scroll, just a hair.`,
-      () => `${T} leaned ${amt} sharp. Your finger landed slightly too close to the bridge — ease it back.`]);
+    if (info.low2) return `${T} a bit sharp — finger 2 back toward finger 1.`;
+    return pick([`${T} a bit sharp — ease back.`, `${T} slightly sharp — finger back a hair.`, `${T} still leaning sharp — roll the fingertip back.`, `${T} sharp — aim a little lower.`]);
   }
-  if (info.high2) return `${T} was ${amt} flat. Keep that 2nd finger high — almost touching where finger 3 goes.`;
-  if (info.finger === 3) return `${T} was ${amt} flat. Reach your 3rd finger a little higher, and listen for the open string ringing along when it's right.`;
-  if (info.finger === 4) return `${T} was ${amt} flat. The 4th finger is our weakest, so curve it and reach from the knuckle — compare it with the next open string.`;
-  return pick([
-    `${T} was ${amt} flat. Nudge that finger up toward the bridge.`,
-    () => `${T} sagged ${amt} flat — place the finger a fraction higher up the string.`]);
+  if (info.high2) return `${T} a bit flat — 2nd finger higher.`;
+  return pick([`${T} a bit flat — nudge up.`, `${T} slightly flat — finger up a hair.`, `${T} still leaning flat — reach a touch higher.`, `${T} flat — aim a little higher.`]);
 }
 
-// Notices patterns across the whole run.
-function patternRemark(results) {
-  const off = results.filter(r => r.status === "sharp" || r.status === "flat");
-  const sharp = off.filter(r => r.status === "sharp").length, flat = off.length - sharp;
-  if (off.length >= 3 && sharp >= off.length * 0.75) return { t: pick([
-    "I'm noticing a pattern — almost every slip was on the sharp side. Your hand may be creeping up toward the bridge, so check your thumb hasn't moved.",
-    "Here's something interesting: you tend to play sharp. Try relaxing your hand back toward the scroll a little."]), e: "thoughtful" };
-  if (off.length >= 3 && flat >= off.length * 0.75) return { t: pick([
-    "I'm noticing a pattern — most slips were flat. Your fingers might be a bit lazy-low; aim each one a hair higher.",
-    "There's a flat tendency today. Lift your wrist slightly so your fingers can reach their spots."]), e: "thoughtful" };
-  const half = Math.floor(results.length / 2);
-  if (results.length >= 8) {
-    const bad = rs => rs.filter(r => r.status !== "ok").length;
-    const a = bad(results.slice(0, half)), b = bad(results.slice(half));
-    if (b >= a + 2) return { t: "The beginning was lovely, but things drifted toward the end. Keep the same calm hand shape all the way to the last note.", e: "thoughtful" };
-    if (a >= b + 2) return { t: "The start was a little nervous, but you really settled in toward the end — nice!", e: "warm" };
-  }
-  const strs = results.filter(r => r.status !== "ok").map(r => noteInfo(r.target).string).filter(Boolean);
-  if (strs.length >= 3 && uniq(strs).length === 1) return { t: `All the trouble was on the ${strs[0]} string. Let's give that string a little extra attention.`, e: "thoughtful" };
-  return null;
-}
-
-function bestStretch(results) {
-  let run = 0, best = 0, end = -1;
-  results.forEach((r, i) => { run = r.status === "ok" ? run + 1 : 0; if (run > best) { best = run; end = i; } });
-  return best >= 3 ? { len: best, from: results[end - best + 1].target, to: results[end].target } : null;
-}
+const MAX_RETRIES = 3;   // misses on the same note before the coach moves on
 
 function coachBriefing(isFix) {
   coachSync();
-  const w = BOOK_DATA[curBook][curIdx];
+  if (isFix) return [{ t: `Play ${listNotes(activeNotes)}.`, e: "calm" }];
   const title = document.getElementById("ex-title").textContent.replace(/^Exercise [\d.]+ · /, "");
-  const first = activeNotes[0], fi = noteInfo(first);
-  const tries = coach.attempts.length, last = coach.attempts[tries - 1];
-  if (isFix) {
-    const notes = uniq(activeNotes);
-    const r0 = last && last.results.find(r => r.target === notes[0] && r.status !== "ok");
-    return [
-      { t: pick([
-          `Okay — just ${listNotes(notes)} this time.`,
-          `Let's zoom in on ${listNotes(notes)}.`,
-          `Detective mode! Only ${listNotes(notes)} for now.`]), e: "playful" },
-      r0 ? { t: adviceFor(r0), e: "warm" } : null,
-      { t: pick(["One slow, full bow on each note. Go whenever you're ready.", "No rush at all. Take your time and listen to each one.", "Play them slowly, and really listen. Off you go."]), e: "calm" }
-    ];
-  }
-  if (tries === 0) {
-    const low2 = uniq(activeNotes).filter(n => noteInfo(n).low2);
-    return [
-      { t: pick([
-          `Alright! Let's play <strong>${title}</strong>${curPos !== 1 ? ` in ${POS_DATA[curPos].name}` : ""}.`,
-          `Ooh, I like this one. <strong>${title}</strong>!`,
-          `Okay, <strong>${title}</strong> — let's see how it goes.`]), e: "excited" },
-      { t: w.goal, e: "warm" },
-      low2.length && !/low/i.test(w.goal) ? { t: `Watch the low 2nd fingers on ${listNotes(low2)} — they sit right next to finger 1.`, e: "thoughtful" } : null,
-      { t: pick([
-          `Start on <strong>${first}</strong>, ${fi.ins}. I'll listen quietly. Whenever you're ready.`,
-          `Your first note is <strong>${first}</strong>, ${fi.ins}. Take a breath… and go.`]), e: "calm" }
-    ];
-  }
-  const worst = last && last.results.find(r => r.status !== "ok");
-  return [
-    { t: pick([
-        "Again! I'm listening.",
-        () => `Take ${tries + 1}. Nice and steady.`,
-        "Okay, deep breath. Let's go again.",
-        "One more time — slower is absolutely fine.",
-        () => tries >= 3 ? "I love your persistence. Here we go!" : "Round two. You've got this."]), e: "warm" },
-    worst ? { t: pick([
-        `This time, keep an ear on <strong>${worst.target}</strong>.`,
-        `Remember <strong>${worst.target}</strong> from last time.`]), e: "calm" } : null
-  ];
+  const first = activeNotes[0];
+  if (!coach.attempts.length) return [{ t: `${title}. Start on <strong>${first}</strong>. Go!`, e: "excited" }];
+  return [{ t: pick(["Again. Go!", "Once more. Go!", "Ready? Go!"]), e: "warm" }];
 }
 
+// Returns what to say and what happens next:
+//   next = "retry" (listen again for the problem notes), "full" (listen for the
+//   whole exercise), or null (stop and wait for the student).
 function coachReview(results, scorePct, isFix) {
   coachSync();
-  const prev = coach.attempts.filter(a => a.isFix === isFix).slice(-1)[0];
+  const prev = coach.attempts.filter(a => !a.isFix).slice(-1)[0];
   results.forEach(r => (coach.noteHist[r.target] = coach.noteHist[r.target] || []).push(r.status));
   coach.attempts.push({ results, scorePct, isFix });
-  const tries = coach.attempts.length;
-  const problems = results.filter(r => r.status !== "ok");
-  const lines = [];
+  const problems = results.filter(r => r.status !== "ok")
+    .sort((a, b) => (b.status === "wrong") - (a.status === "wrong") || Math.abs(b.diffCents || 0) - Math.abs(a.diffCents || 0));
+  const retryNotes = uniq(problems.map(r => r.target));
 
-  if (isFix) {
-    const fixed = uniq(results.filter(r => r.status === "ok").map(r => r.target));
-    if (!problems.length) {
-      lines.push({ t: pick(["Yes!", "There it is!", "Beautiful!", "That's it!"]) + " " + pick([
-        `${listNotes(fixed)} — all fixed.`,
-        `Every one of those notes was right on target.`]), e: "excited" });
-      lines.push({ t: pick([
-        "Now let's put them back into the whole piece. Press Start when you're ready!",
-        "Let's see if they stay fixed in the full exercise. Press Start again!"]), e: "proud" });
-      return { lines, backToFull: true };
-    }
-    if (fixed.length) lines.push({ t: pick([`${listNotes(fixed)} — fixed! Lovely.`, `Nice, ${listNotes(fixed)} sounded right this time.`]), e: "proud" });
-    else lines.push({ t: pick(["Hmm, not quite yet — and that's completely normal.", "Still a bit tricky, isn't it? Let's think about why."]), e: "gentle" });
-    problems.slice(0, 2).forEach(r => lines.push({ t: adviceFor(r), e: "warm" }));
-    const stubborn = problems.find(r => coach.noteHist[r.target].filter(s => s !== "ok").length >= 3);
-    if (stubborn) lines.push({ t: `<strong>${stubborn.target}</strong> is being stubborn today! Try it slowly with the tuner on, until the needle sits in the middle — then come back.`, e: "playful" });
-    else lines.push({ t: pick(["Shall we try those again? Press Fix.", "Let's give them one more go — press Fix.", "Once more on just those, using the Fix button."]), e: "calm" });
-    return { lines, backToFull: false };
-  }
-
-  // Full run: opening reaction, compared with the previous full attempt.
   if (!problems.length) {
-    lines.push({ t: prev && prev.scorePct < 100
-      ? pick([() => `From ${prev.scorePct}% to 100%! That's exactly what practice sounds like.`, () => `100%! Last time was ${prev.scorePct}% — what a difference.`])
-      : pick(["Wow! Every single note, spot on!", "Beautiful! Clean from start to finish.", "Bravo! That was really, really in tune."]), e: "excited" });
-    lines.push({ t: pick([
-      "Your hand frame is getting so reliable. I'm proud of you.",
-      "Try it once more with the play-along at full speed — you're ready.",
-      "Next challenge: same notes, but make each bow sing a little more."]), e: "proud" });
-    return { lines, backToFull: false };
+    if (isFix) { coach.retries = 0; return { lines: [{ t: pick(["Yes!", "That's it!", "Got it!"]) + " Now the whole piece.", e: "excited" }], next: "full" }; }
+    const up = prev && prev.scorePct < 100 ? ` Up from ${prev.scorePct}%.` : "";
+    return { lines: [{ t: pick(["Perfect!", "Spot on!", "Beautiful!"]) + " 100%." + up, e: "excited" }], next: null };
   }
-  if (prev && scorePct > prev.scorePct + 4) lines.push({ t: pick([() => `Better! You went from ${prev.scorePct}% to ${scorePct}%.`, () => `Ooh, ${scorePct}% — up from ${prev.scorePct}%. It's coming together!`]), e: "proud" });
-  else if (prev && scorePct < prev.scorePct - 4) lines.push({ t: pick(["Hmm, that one was a little shakier than last time. That happens — especially when we start thinking too hard.", () => `${scorePct}% this time. A small dip, no problem at all — let's look at what happened.`]), e: "gentle" });
-  else if (scorePct >= 80) lines.push({ t: pick([() => `Ooh, so close! ${scorePct}%.`, () => `${scorePct}% — that's really good!`, () => `Nice! ${scorePct}%, and only a couple of small things to polish.`]), e: "excited" });
-  else if (scorePct >= 50) lines.push({ t: pick([() => `Nice effort — ${scorePct}%. There's a lot going right here.`, () => `${scorePct}%. Good foundations; let's tidy a few notes.`]), e: "warm" });
-  else lines.push({ t: pick([() => `Okay, ${scorePct}% — that one was tricky. Don't worry, that's exactly why we practise slowly.`, "That was a tough one! Let's break it down together."]), e: "gentle" });
 
-  const stretch = bestStretch(results);
-  if (stretch && stretch.len < results.length) lines.push({ t: pick([
-    () => `I loved the stretch from <strong>${stretch.from}</strong> to <strong>${stretch.to}</strong> — ${stretch.len} notes in a row, perfectly in tune.`,
-    () => `${stretch.len} notes in a row were spot on, from <strong>${stretch.from}</strong> to <strong>${stretch.to}</strong>.`]), e: "warm" });
-
-  const pattern = patternRemark(results);
-  if (pattern) lines.push(pattern);
-
-  const ranked = problems.slice().sort((a, b) => (b.status === "wrong") - (a.status === "wrong") || Math.abs(b.diffCents || 0) - Math.abs(a.diffCents || 0));
-  ranked.slice(0, 2).forEach((r, i) => {
-    const bad = coach.noteHist[r.target].filter(s => s !== "ok").length;
-    const lead = bad >= 3 ? `<strong>${r.target}</strong> again — that's ${bad} times now, so it's officially our project note. ` : (i === 1 ? pick(["Also, ", "And one more: ", "Then, "]) : "");
-    lines.push({ t: lead + adviceFor(r), e: bad >= 3 ? "firm" : "warm" });
-  });
-  if (problems.length > 2) lines.push({ t: `There ${problems.length - 2 === 1 ? "was one more small slip" : `were ${problems.length - 2} more small slips`} — they're all marked on the music.`, e: "calm" });
-
-  lines.push({ t: tries >= 4 && scorePct < 70
-    ? "You've been working hard. Maybe play it once along with the recording at 75% speed, then come back to me."
-    : pick(["Shall we fix those notes on their own? Press Fix.", "Let's isolate them — hit the Fix button and we'll do just those.", "Press Fix and we'll polish just those notes together."]), e: "calm" });
-  return { lines, backToFull: false };
+  coach.retries = isFix ? (coach.retries || 0) + 1 : 1;
+  const tip = tipFor(problems[0]);
+  if (coach.retries > MAX_RETRIES) {
+    coach.retries = 0;
+    return { lines: [{ t: `${tip} Let's pause here — check ${listNotes(retryNotes)} with the tuner, then press Start.`, e: "gentle" }], next: null };
+  }
+  const head = isFix ? pick(["Close.", "Not yet.", "Almost."]) : (scorePct >= 80 ? `${scorePct}%, close!` : `${scorePct}%.`);
+  return {
+    lines: [
+      { t: head, e: isFix ? "gentle" : (scorePct >= 80 ? "excited" : "warm"), pause: 120 },
+      { t: tip, e: "warm", pause: 120 },
+      { t: `Play ${listNotes(retryNotes)} again.`, e: "calm" }
+    ],
+    next: "retry", notes: retryNotes
+  };
 }
 
 // ============================================================================
@@ -1254,10 +1141,28 @@ function finishAndDeliverReview() {
   const isFix = document.getElementById("reset-notes-btn").style.display !== "none";
   document.getElementById("ai-console").className = (wrongNotes.length || flatSharpNotes.length) ? "ai-console fix" : "ai-console good";
   const review = coachReview(runResults.filter(Boolean), scorePct, isFix);
+  if (review.next) fixBtn.style.display = "none";   // the coach retries by itself
   speakLines(review.lines, () => {
-    // All problem notes fixed: put them back into the whole exercise.
-    if (review.backToFull && aiStage === "review") setTimeout(resetFullExercise, 800);
+    if (aiStage !== "review") return;                 // student pressed Stop
+    if (review.next === "retry") listenAgain(review.notes);
+    else if (review.next === "full") listenAgain(null);
   });
+}
+
+// Start listening straight away, without a briefing: either just the problem
+// notes, or (notes = null) the whole exercise again.
+function listenAgain(notes) {
+  if (notes) {
+    activeNotes = notes.slice();
+    document.getElementById("reset-notes-btn").style.display = "inline-flex";
+  } else {
+    activeNotes = fullExerciseNotes.slice();
+    document.getElementById("reset-notes-btn").style.display = "none";
+  }
+  document.getElementById("fix-btn").style.display = "none";
+  document.getElementById("masterclass-btn").textContent = "⏹ Stop Masterclass";
+  drawStaff();
+  beginListeningStage();
 }
 
 function simulateMasterclassRun(perfect) {
