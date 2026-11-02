@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Violin Tone Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #141210; --panel: #2a2620; --ink: #f3eee6; --muted: #b9b0a3; --line: #4a433a;
+    --amber: #f5b84a; --green: #4fbf7a; --rec: #e0483c; --accent: #ff6a3d;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: Inter, system-ui, sans-serif; }
+  button { font-family: inherit; }
+  .app { max-width: 1280px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; gap: 26px; padding: 28px 40px 32px; }
+
+  /* header */
+  header { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 30px; letter-spacing: .04em; text-transform: uppercase; }
+  .brand-sub { font-size: 13px; color: var(--muted); }
+  .chips { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .chip { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 9px 14px; border-radius: 999px; background: var(--panel); color: #e9dfcf; }
+  .chip.warn { background: #4a2a12; color: #ffd9a8; }
+  .rec-btn { display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 22px; border: 0; border-radius: 999px; background: var(--rec); color: #fff; font-weight: 600; font-size: 15px; cursor: pointer; }
+  .rec-btn .dot { width: 12px; height: 12px; border-radius: 50%; background: #fff; }
+  .rec-btn.on { background: #fff; color: var(--rec); }
+  .rec-btn.on .dot { background: var(--rec); border-radius: 2px; animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: .3; } }
+  .rec-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+  /* mood + meters */
+  .mood { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+  .mood-label { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .mood-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 64px; line-height: 1; color: var(--accent); transition: color .2s; }
+  .mood-desc { font-size: 15px; color: #d9cfbf; }
+  .meters { display: flex; flex-direction: column; gap: 8px; width: min(380px, 100%); }
+  .meter-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+  .meter { height: 12px; border-radius: 6px; background: var(--panel); overflow: hidden; }
+  .meter > div { height: 100%; width: 0%; transition: width .06s linear; }
+
+  /* pedals */
+  .pedals { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; }
+  .pedal { display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 18px; min-height: 380px;
+           padding: 22px 18px 24px; border-radius: 18px; border: 3px solid transparent; cursor: pointer; transition: border-color .15s, transform .1s; }
+  .pedal.active { border-color: var(--accent); }
+  .pedal-top { display: flex; justify-content: space-between; width: 100%; align-items: center; }
+  .pedal-kind { font-size: 11px; letter-spacing: .16em; opacity: .8; }
+  .led { width: 14px; height: 14px; border-radius: 50%; background: rgba(255,255,255,.12); transition: background .15s, box-shadow .15s; }
+  .pedal.active .led { background: #ff5a3c; box-shadow: 0 0 14px #ff5a3c; }
+  .knobs { display: flex; gap: 22px; }
+  .knob-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; opacity: .9; }
+  .knob { width: 58px; height: 58px; border-radius: 50%; background: rgba(0,0,0,.35); border: 2px solid rgba(255,255,255,.18);
+          display: flex; justify-content: center; cursor: ns-resize; touch-action: none; outline-offset: 3px; }
+  .knob:focus-visible { outline: 2px solid var(--amber); }
+  .knob .tick { width: 3px; height: 21px; background: #fff; margin-top: 4px; transform-origin: 50% 25px; border-radius: 2px; }
+  .knob-val { font-variant-numeric: tabular-nums; opacity: .75; }
+  .pedal-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 34px; letter-spacing: .04em; }
+  .footswitch { width: 68px; height: 68px; border-radius: 50%; background: #c9c3bb; border: 6px solid #8d867d; cursor: pointer; }
+  .footswitch:active { transform: scale(.95); }
+  .footswitch:focus-visible { outline: 3px solid var(--amber); outline-offset: 4px; }
+
+  /* footer */
+  footer { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+  footer label { display: flex; align-items: center; gap: 12px; }
+  input[type=range] { accent-color: var(--amber); }
+  .ghost { height: 44px; padding: 0 18px; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: var(--ink); font-size: 14px; font-weight: 500; cursor: pointer; }
+  .ghost.on { border-color: var(--amber); color: var(--amber); }
+
+  .takes { display: none; flex-direction: column; gap: 10px; padding: 16px 18px; border-radius: 14px; background: var(--panel); }
+  .takes.show { display: flex; }
+  .take { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 14px; }
+  .take audio { height: 36px; }
+  .take a { color: var(--amber); }
+
+  /* start overlay */
+  .overlay { position: fixed; inset: 0; background: rgba(10,8,6,.86); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 10; }
+  .overlay.hide { display: none; }
+  .card { max-width: 520px; background: #1f1b17; border: 1px solid var(--line); border-radius: 20px; padding: 32px; display: flex; flex-direction: column; gap: 16px; }
+  .card h1 { margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 36px; letter-spacing: .03em; }
+  .card p { margin: 0; color: #d9cfbf; line-height: 1.55; }
+  .card ul { margin: 0; padding-left: 20px; color: #d9cfbf; line-height: 1.7; }
+  .start-btn { height: 52px; border: 0; border-radius: 999px; background: var(--amber); color: #1a1408; font-size: 16px; font-weight: 700; cursor: pointer; }
+  .err { color: #ffb4a8; font-size: 14px; display: none; }
+
+  @media (max-width: 1000px) { .pedals { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 560px) {
+    .app { padding: 18px 16px 24px; gap: 20px; }
+    .mood-name { font-size: 44px; }
+    .pedals { gap: 12px; }
+    .pedal { min-height: 300px; padding: 16px 10px; }
+    .knobs { gap: 10px; }
+    .knob { width: 48px; height: 48px; }
+    .knob .tick { height: 17px; transform-origin: 50% 20px; }
+    .pedal-name { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#f5b84a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      <div>
+        <div class="brand-name">Violin Tone Studio</div>
+        <div class="brand-sub">Play your violin. Pick a mood. Hear it live in your headphones.</div>
+      </div>
+    </div>
+    <div class="chips">
+      <span class="chip" id="chip-phones">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="3" y="14" width="4" height="7" rx="1.5"/><rect x="17" y="14" width="4" height="7" rx="1.5"/></svg>
+        <span>Headphones</span>
+      </span>
+      <span class="chip" id="chip-mic">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+        <span id="mic-name">Mic off</span>
+      </span>
+      <span class="chip" id="chip-latency" title="Delay between your bow and your ears">Delay: —</span>
+      <button class="rec-btn" id="rec-btn" type="button" disabled><span class="dot"></span><span id="rec-label">Record jam</span></button>
+    </div>
+  </header>
+
+  <section class="mood">
+    <div>
+      <div class="mood-label">Current mood</div>
+      <div class="mood-name" id="mood-name">ROCK STAGE</div>
+      <div class="mood-desc" id="mood-desc">Heavy drive and a big amp. Your violin becomes a lead guitar.</div>
+    </div>
+    <div class="meters">
+      <div class="meter-row"><span>Input level</span><span id="in-state">—</span></div>
+      <div class="meter"><div id="in-meter" style="background: var(--green)"></div></div>
+      <div class="meter-row"><span>Output</span><span id="out-db">—</span></div>
+      <div class="meter"><div id="out-meter" style="background: var(--amber)"></div></div>
+    </div>
+  </section>
+
+  <section class="pedals" id="pedals" aria-label="Mood pedals"></section>
+
+  <section class="takes" id="takes" aria-label="Your recordings"></section>
+
+  <footer>
+    <label>Volume <input type="range" id="vol" min="0" max="100" value="70" style="width: 220px"></label>
+    <span>Tap a pedal to switch mood. Drag a knob up or down, or use the arrow keys.</span>
+    <button type="button" class="ghost" id="bypass">Clean (bypass)</button>
+  </footer>
+</div>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="start-title">
+  <div class="card">
+    <h1 id="start-title">Put your headphones on first</h1>
+    <p>Violin Tone Studio plays your violin back to you with effects, live. Through laptop speakers the mic would hear itself and howl.</p>
+    <ul>
+      <li><strong>Wired headphones</strong> work best. Bluetooth adds a delay you will feel.</li>
+      <li>Your sound stays on this device. Nothing is uploaded.</li>
+      <li>Start with the volume low, then raise it.</li>
+    </ul>
+    <button type="button" class="start-btn" id="start-btn">I'm wearing headphones — start</button>
+    <div class="err" id="start-err"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// Violin Tone Studio: live effects for an acoustic violin, in the browser.
+// Mic -> input gain -> [active mood chain] -> master -> headphones (+ recorder)
+// Everything runs on the device with the Web Audio API.
+// ============================================================================
+
+const PEDALS = [
+  { id: "rock", kind: "DRIVE", name: "ROCK", title: "ROCK STAGE", accent: "#ff6a3d", bg: "#3a1f1a", sub: "#f0c9bf",
+    desc: "Heavy drive and a big amp. Your violin becomes a lead guitar.",
+    knobs: [{ key: "gain", label: "Gain", value: 0.7 }, { key: "tone", label: "Tone", value: 0.5 }] },
+  { id: "blues", kind: "OVERDRIVE", name: "BLUES", title: "BLUES BAR", accent: "#7aa7ff", bg: "#1f2a3a", sub: "#c3d2e6",
+    desc: "Warm crunch with a spring reverb. Smoky and soulful.",
+    knobs: [{ key: "warmth", label: "Warmth", value: 0.45 }, { key: "spring", label: "Spring", value: 0.45 }] },
+  { id: "ambient", kind: "SPACE", name: "AMBIENT", title: "AMBIENT SKY", accent: "#4fd1b5", bg: "#1b3330", sub: "#bfe0d9",
+    desc: "Wide reverb and floating echoes. Every note hangs in the air.",
+    knobs: [{ key: "reverb", label: "Reverb", value: 0.7 }, { key: "echo", label: "Echo", value: 0.45 }] },
+  { id: "cinematic", kind: "OCTAVE", name: "CINEMATIC", title: "CINEMATIC HALL", accent: "#b59bff", bg: "#2d2340", sub: "#d8cdec",
+    desc: "A deep voice an octave below, in a concert hall. Like a film score.",
+    knobs: [{ key: "depth", label: "Depth", value: 0.55 }, { key: "hall", label: "Hall", value: 0.6 }] }
+];
+const CLEAN = { id: "clean", title: "CLEAN VIOLIN", accent: "#f3eee6", desc: "Your natural sound, with a light touch of room." };
+
+let ctx = null, micStream = null, inputGain, master, inAnalyser, outAnalyser, recDest;
+const chains = {};
+let active = "rock";
+
+// ---------- small DSP helpers ----------
+function makeImpulse(seconds, decay, bright) {
+  const rate = ctx.sampleRate, len = Math.floor(rate * seconds);
+  const buf = ctx.createBuffer(2, len, rate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = buf.getChannelData(ch);
+    let lp = 0;
+    for (let i = 0; i < len; i++) {
+      const white = Math.random() * 2 - 1;
+      lp += (white - lp) * bright;                       // darker tail for lower "bright"
+      d[i] = lp * Math.pow(1 - i / len, decay);
+    }
+  }
+  return buf;
+}
+function hardCurve(k) {          // rock: saturating tanh, normalised
+  const n = 2048, c = new Float32Array(n), t = Math.tanh(k);
+  for (let i = 0; i < n; i++) { const x = i * 2 / n - 1; c[i] = Math.tanh(k * x) / t; }
+  return c;
+}
+function softCurve(k) {          // blues: gentle, slightly asymmetric
+  const n = 2048, c = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const x = i * 2 / n - 1, y = (1 + k) * x / (1 + k * Math.abs(x));
+    c[i] = y > 0 ? y : y * 0.85;
+  }
+  return c;
+}
+function biquad(type, freq, q, gain) {
+  const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = freq;
+  if (q !== undefined) f.Q.value = q; if (gain !== undefined) f.gain.value = gain; return f;
+}
+function gainNode(v) { const g = ctx.createGain(); g.gain.value = v; return g; }
+function chain(...nodes) { for (let i = 0; i < nodes.length - 1; i++) nodes[i].connect(nodes[i + 1]); return nodes; }
+function ramp(param, v, t = 0.03) { param.setTargetAtTime(v, ctx.currentTime, t); }
+
+// ---------- the four moods + clean ----------
+function buildRock() {
+  const inp = gainNode(1), out = gainNode(0);
+  const hp = biquad("highpass", 160, 0.7), pre = gainNode(1), shaper = ctx.createWaveShaper();
+  shaper.oversample = "4x";
+  const mid = biquad("peaking", 900, 1.0, 5), cabHp = biquad("highpass", 90, 0.7), cabLp = biquad("lowpass", 4500, 0.9);
+  const post = gainNode(0.35), dry = gainNode(1), roomSend = gainNode(0.18), room = ctx.createConvolver();
+  room.buffer = makeImpulse(0.9, 3, 0.35);
+  chain(inp, hp, pre, shaper, mid, cabHp, cabLp, post, dry, out);
+  post.connect(roomSend); roomSend.connect(room); room.connect(out);
+  return { inp, out, set: { gain: v => { shaper.curve = hardCurve(4 + v * 46); ramp(pre.gain, 1 + v * 3); ramp(post.gain, 0.42 - v * 0.17); },
+                            tone: v => ramp(cabLp.frequency, 1800 + v * 5200) } };
+}
+function buildBlues() {
+  const inp = gainNode(1), out = gainNode(0);
+  const hp = biquad("highpass", 120, 0.7), pre = gainNode(1), shaper = ctx.createWaveShaper(); shaper.oversample = "4x";
+  const tone = biquad("lowpass", 3200, 0.8), body = biquad("peaking", 450, 0.9, 3), post = gainNode(0.5);
+  const dry = gainNode(1), send = gainNode(0.3), spring = ctx.createConvolver(), springTone = biquad("bandpass", 1800, 0.6);
+  spring.buffer = makeImpulse(2.0, 2.2, 0.6);
+  chain(inp, hp, pre, shaper, body, tone, post, dry, out);
+  post.connect(send); send.connect(springTone); springTone.connect(spring); spring.connect(out);
+  return { inp, out, set: { warmth: v => { shaper.curve = softCurve(1 + v * 14); ramp(pre.gain, 1 + v * 1.5); ramp(post.gain, 0.6 - v * 0.25); },
+                            spring: v => ramp(send.gain, v * 0.9) } };
+}
+function buildAmbient() {
+  const inp = gainNode(1), out = gainNode(0);
+  const dry = gainNode(0.7), delay = ctx.createDelay(2.0), fb = gainNode(0.45), dTone = biquad("lowpass", 3500, 0.7), dWet = gainNode(0.35);
+  delay.delayTime.value = 0.42;
+  const revSend = gainNode(0.6), rev = ctx.createConvolver(), revOut = gainNode(1);
+  rev.buffer = makeImpulse(5.5, 2.4, 0.25);
+  chain(inp, dry, out);
+  inp.connect(delay); delay.connect(dTone); dTone.connect(fb); fb.connect(delay); dTone.connect(dWet); dWet.connect(out);
+  inp.connect(revSend); dWet.connect(revSend); revSend.connect(rev); rev.connect(revOut); revOut.connect(out);
+  return { inp, out, set: { reverb: v => { ramp(revSend.gain, v * 1.1); ramp(dry.gain, 0.85 - v * 0.35); },
+                            echo: v => { ramp(fb.gain, v * 0.72); ramp(dWet.gain, v * 0.6); } } };
+}
+// Cinematic: the violin plus a synthesised voice one octave below that follows
+// the pitch we detect, in a large hall.
+function buildCinematic() {
+  const inp = gainNode(1), out = gainNode(0);
+  const dry = gainNode(0.85), osc = ctx.createOscillator(), osc2 = ctx.createOscillator();
+  osc.type = "triangle"; osc2.type = "sawtooth"; osc.frequency.value = 110; osc2.frequency.value = 110;
+  const sawLevel = gainNode(0.18), subTone = biquad("lowpass", 1100, 0.8), env = gainNode(0), depth = gainNode(0.6);
+  osc.connect(subTone); osc2.connect(sawLevel); sawLevel.connect(subTone); subTone.connect(env); env.connect(depth);
+  osc.start(); osc2.start();
+  const hallSend = gainNode(0.5), hall = ctx.createConvolver(), mix = gainNode(1);
+  hall.buffer = makeImpulse(3.8, 2.6, 0.3);
+  chain(inp, dry, mix); depth.connect(mix); mix.connect(out);
+  mix.connect(hallSend); hallSend.connect(hall); hall.connect(out);
+  // pitch follower
+  const an = ctx.createAnalyser(); an.fftSize = 2048; inp.connect(an);
+  const buf = new Float32Array(an.fftSize);
+  const timer = setInterval(() => {
+    if (active !== "cinematic") { env.gain.setTargetAtTime(0, ctx.currentTime, 0.05); return; }
+    an.getFloatTimeDomainData(buf);
+    const r = detectPitch(buf, ctx.sampleRate);
+    if (r && r.clarity > 0.75 && r.freq > 180 && r.freq < 2200) {
+      const t = ctx.currentTime;
+      osc.frequency.setTargetAtTime(r.freq / 2, t, 0.015);
+      osc2.frequency.setTargetAtTime(r.freq / 2, t, 0.015);
+      env.gain.setTargetAtTime(Math.min(1, r.rms * 6), t, 0.03);
+    } else {
+      env.gain.setTargetAtTime(0, ctx.currentTime, 0.06);
+    }
+  }, 25);
+  return { inp, out, timer, set: { depth: v => ramp(depth.gain, v * 1.2), hall: v => ramp(hallSend.gain, v * 1.0) } };
+}
+function buildClean() {
+  const inp = gainNode(1), out = gainNode(0), dry = gainNode(1), send = gainNode(0.12), room = ctx.createConvolver();
+  room.buffer = makeImpulse(1.2, 3, 0.3);
+  chain(inp, dry, out); inp.connect(send); send.connect(room); room.connect(out);
+  return { inp, out, set: {} };
+}
+
+// YIN pitch detector (same family as the practice app's), used for the octave voice.
+function detectPitch(buf, sampleRate) {
+  const n = buf.length; let rms = 0;
+  for (let i = 0; i < n; i++) rms += buf[i] * buf[i];
+  rms = Math.sqrt(rms / n);
+  if (rms < 0.004) return null;
+  const tauMin = Math.floor(sampleRate / 2300), tauMax = Math.min(Math.floor(sampleRate / 180), n >> 1), W = n - tauMax;
+  const d = new Float32Array(tauMax + 1);
+  for (let tau = 1; tau <= tauMax; tau++) { let s = 0; for (let i = 0; i < W; i++) { const x = buf[i] - buf[i + tau]; s += x * x; } d[tau] = s; }
+  let run = 0, tau = -1; const c = new Float32Array(tauMax + 1); c[0] = 1;
+  for (let t = 1; t <= tauMax; t++) { run += d[t]; c[t] = run ? d[t] * t / run : 1; }
+  for (let t = tauMin; t <= tauMax; t++) if (c[t] < 0.15) { while (t + 1 <= tauMax && c[t + 1] < c[t]) t++; tau = t; break; }
+  if (tau < 0) return null;
+  let better = tau;
+  if (tau > 1 && tau < tauMax) { const a = c[tau - 1], b = c[tau], e = c[tau + 1], den = a + e - 2 * b; if (den) better = tau + (a - e) / (2 * den); }
+  return { freq: sampleRate / better, clarity: 1 - c[tau], rms };
+}
+
+// ---------- switching moods ----------
+function setMood(id) {
+  if (!ctx) { active = id; renderActive(); return; }
+  const prev = chains[active], next = chains[id];
+  if (prev && prev !== next) {
+    ramp(prev.out.gain, 0, 0.02);
+    const old = prev;
+    setTimeout(() => { if (chains[active] !== old) { try { inputGain.disconnect(old.inp); } catch (e) {} } }, 120);
+  }
+  active = id;
+  try { inputGain.connect(next.inp); } catch (e) {}
+  ramp(next.out.gain, 1, 0.02);
+  renderActive();
+}
+
+function renderActive() {
+  const p = PEDALS.find(x => x.id === active) || CLEAN;
+  document.documentElement.style.setProperty("--accent", p.accent);
+  document.getElementById("mood-name").textContent = p.title;
+  document.getElementById("mood-desc").textContent = p.desc;
+  document.querySelectorAll(".pedal").forEach(el => {
+    const on = el.dataset.id === active;
+    el.classList.toggle("active", on);
+    el.querySelector(".footswitch").setAttribute("aria-pressed", on ? "true" : "false");
+  });
+  const by = document.getElementById("bypass");
+  by.classList.toggle("on", active === "clean");
+  by.setAttribute("aria-pressed", active === "clean" ? "true" : "false");
+}
+
+// ---------- pedals UI ----------
+function knobAngle(v) { return -135 + v * 270; }
+function buildPedals() {
+  const host = document.getElementById("pedals");
+  PEDALS.forEach(p => {
+    const el = document.createElement("div");
+    el.className = "pedal"; el.dataset.id = p.id;
+    el.style.background = p.bg; el.style.color = "#fff";
+    el.innerHTML = `
+      <div class="pedal-top"><span class="pedal-kind" style="color:${p.sub}">${p.kind}</span><span class="led"></span></div>
+      <div class="knobs">${p.knobs.map(k => `
+        <div class="knob-wrap" style="color:${p.sub}">
+          <div class="knob" role="slider" tabindex="0" aria-label="${p.name} ${k.label}" aria-valuemin="0" aria-valuemax="100"
+               aria-valuenow="${Math.round(k.value * 100)}" data-pedal="${p.id}" data-key="${k.key}">
+            <div class="tick" style="transform: rotate(${knobAngle(k.value)}deg)"></div></div>
+          <span>${k.label}</span><span class="knob-val">${Math.round(k.value * 10)}</span>
+        </div>`).join("")}
+      </div>
+      <div class="pedal-name">${p.name}</div>
+      <button type="button" class="footswitch" aria-pressed="false" aria-label="Switch to ${p.name}"></button>`;
+    el.addEventListener("click", e => { if (!e.target.closest(".knob")) setMood(p.id); });
+    host.appendChild(el);
+  });
+  document.querySelectorAll(".knob").forEach(attachKnob);
+}
+function setKnob(el, v) {
+  v = Math.max(0, Math.min(1, v));
+  const p = PEDALS.find(x => x.id === el.dataset.pedal), k = p.knobs.find(x => x.key === el.dataset.key);
+  k.value = v;
+  el.querySelector(".tick").style.transform = `rotate(${knobAngle(v)}deg)`;
+  el.setAttribute("aria-valuenow", Math.round(v * 100));
+  el.parentElement.querySelector(".knob-val").textContent = Math.round(v * 10);
+  if (ctx && chains[p.id] && chains[p.id].set[k.key]) chains[p.id].set[k.key](v);
+}
+function attachKnob(el) {
+  let startY = 0, startV = 0, dragging = false;
+  const cur = () => PEDALS.find(x => x.id === el.dataset.pedal).knobs.find(x => x.key === el.dataset.key).value;
+  el.addEventListener("pointerdown", e => { dragging = true; startY = e.clientY; startV = cur(); el.setPointerCapture(e.pointerId); e.preventDefault(); });
+  el.addEventListener("pointermove", e => { if (dragging) setKnob(el, startV + (startY - e.clientY) / 160); });
+  const end = () => { dragging = false; };
+  el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end);
+  el.addEventListener("wheel", e => { e.preventDefault(); setKnob(el, cur() - Math.sign(e.deltaY) * 0.05); }, { passive: false });
+  el.addEventListener("keydown", e => {
+    const step = { ArrowUp: 0.05, ArrowRight: 0.05, ArrowDown: -0.05, ArrowLeft: -0.05, PageUp: 0.2, PageDown: -0.2 }[e.key];
+    if (step !== undefined) { e.preventDefault(); setKnob(el, cur() + step); }
+    if (e.key === "Home") { e.preventDefault(); setKnob(el, 0); }
+    if (e.key === "End") { e.preventDefault(); setKnob(el, 1); }
+  });
+}
+
+// ---------- start: audio graph + mic ----------
+async function start() {
+  const err = document.getElementById("start-err");
+  err.style.display = "none";
+  try {
+    ctx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: "interactive" });
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+  } catch (e) {
+    err.textContent = "The microphone couldn't start. Allow microphone access for this site (the lock icon next to the address), close other apps using the mic, then try again.";
+    err.style.display = "block";
+    if (ctx) { ctx.close(); ctx = null; }
+    return;
+  }
+  await ctx.resume();
+  const src = ctx.createMediaStreamSource(micStream);
+  inputGain = gainNode(1.4);
+  inAnalyser = ctx.createAnalyser(); inAnalyser.fftSize = 1024;
+  src.connect(inputGain); inputGain.connect(inAnalyser);
+  master = gainNode(0);
+  const limiter = ctx.createDynamicsCompressor();          // protects ears from sudden peaks
+  limiter.threshold.value = -6; limiter.knee.value = 4; limiter.ratio.value = 12; limiter.attack.value = 0.002; limiter.release.value = 0.12;
+  outAnalyser = ctx.createAnalyser(); outAnalyser.fftSize = 1024;
+  recDest = ctx.createMediaStreamDestination();
+  master.connect(limiter); limiter.connect(outAnalyser); limiter.connect(ctx.destination); limiter.connect(recDest);
+
+  chains.rock = buildRock(); chains.blues = buildBlues(); chains.ambient = buildAmbient();
+  chains.cinematic = buildCinematic(); chains.clean = buildClean();
+  Object.values(chains).forEach(c => c.out.connect(master));
+  PEDALS.forEach(p => p.knobs.forEach(k => chains[p.id].set[k.key](k.value)));
+
+  // start quiet, then fade up to the volume slider (gentle on the ears)
+  master.gain.setValueAtTime(0, ctx.currentTime);
+  master.gain.linearRampToValueAtTime(volume(), ctx.currentTime + 1.2);
+  setMood(active);
+
+  const track = micStream.getAudioTracks()[0];
+  document.getElementById("mic-name").textContent = (track && track.label) ? track.label.replace(/\s*\(.*\)$/, "").slice(0, 28) : "Microphone";
+  const lat = Math.round(((ctx.baseLatency || 0) + (ctx.outputLatency || 0)) * 1000);
+  document.getElementById("chip-latency").textContent = lat ? `Delay: ${lat} ms` : "Delay: low";
+  if (lat > 60) document.getElementById("chip-latency").classList.add("warn");
+  document.getElementById("rec-btn").disabled = false;
+  document.getElementById("overlay").classList.add("hide");
+  requestAnimationFrame(meters);
+}
+
+function volume() { const v = document.getElementById("vol").value / 100; return v * v * 1.6; }
+
+const inBuf = new Float32Array(1024), outBuf = new Float32Array(1024);
+function rmsOf(an, b) { an.getFloatTimeDomainData(b); let s = 0; for (let i = 0; i < b.length; i++) s += b[i] * b[i]; return Math.sqrt(s / b.length); }
+function meters() {
+  const ri = rmsOf(inAnalyser, inBuf), ro = rmsOf(outAnalyser, outBuf);
+  document.getElementById("in-meter").style.width = Math.min(100, Math.sqrt(ri / 0.25) * 100) + "%";
+  document.getElementById("out-meter").style.width = Math.min(100, Math.sqrt(ro / 0.35) * 100) + "%";
+  document.getElementById("in-state").textContent = ri < 0.004 ? "Play something" : ri > 0.3 ? "Too loud" : "Good";
+  const db = ro > 0.0001 ? Math.round(20 * Math.log10(ro)) : null;
+  document.getElementById("out-db").textContent = db === null ? "—" : `${db} dB`;
+  requestAnimationFrame(meters);
+}
+
+// ---------- recording ----------
+let recorder = null, chunks = [], recStart = 0, recTimer = null, takeNo = 0;
+function toggleRecord() {
+  const btn = document.getElementById("rec-btn"), label = document.getElementById("rec-label");
+  if (recorder && recorder.state === "recording") { recorder.stop(); return; }
+  const types = ["audio/webm;codecs=opus", "audio/ogg;codecs=opus", "audio/mp4", "audio/webm"];
+  const mime = types.find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || "";
+  recorder = new MediaRecorder(recDest.stream, mime ? { mimeType: mime } : undefined);
+  chunks = [];
+  recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+  recorder.onstop = () => {
+    clearInterval(recTimer);
+    btn.classList.remove("on"); label.textContent = "Record jam";
+    const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+    addTake(blob, (performance.now() - recStart) / 1000);
+  };
+  recorder.start(250);
+  recStart = performance.now();
+  btn.classList.add("on");
+  const tick = () => { const s = Math.floor((performance.now() - recStart) / 1000); label.textContent = `Stop · ${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`; };
+  tick(); recTimer = setInterval(tick, 500);
+}
+function addTake(blob, secs) {
+  takeNo++;
+  const url = URL.createObjectURL(blob), ext = (blob.type.includes("ogg") ? "ogg" : blob.type.includes("mp4") ? "m4a" : "webm");
+  const mood = (PEDALS.find(x => x.id === active) || CLEAN).title.toLowerCase().replace(/\s+/g, "-");
+  const box = document.getElementById("takes");
+  box.classList.add("show");
+  const row = document.createElement("div"); row.className = "take";
+  const name = `violin-jam-${takeNo}-${mood}.${ext}`;
+  row.innerHTML = `<strong>Take ${takeNo}</strong><span>${Math.round(secs)} s · ${(PEDALS.find(x => x.id === active) || CLEAN).title}</span>`;
+  const audio = document.createElement("audio"); audio.controls = true; audio.src = url;
+  const a = document.createElement("a"); a.href = url; a.download = name; a.textContent = "Download";
+  row.appendChild(audio); row.appendChild(a);
+  box.prepend(row);
+}
+
+// ---------- wire up ----------
+buildPedals();
+renderActive();
+document.getElementById("start-btn").addEventListener("click", start);
+document.getElementById("rec-btn").addEventListener("click", toggleRecord);
+document.getElementById("bypass").addEventListener("click", () => setMood(active === "clean" ? "rock" : "clean"));
+document.getElementById("vol").addEventListener("input", () => { if (ctx) ramp(master.gain, volume(), 0.05); });
+</script>
+</body>
+</html>
