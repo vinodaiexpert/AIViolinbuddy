@@ -69,6 +69,11 @@
   .ghost { height: 44px; padding: 0 18px; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: var(--ink); font-size: 14px; font-weight: 500; cursor: pointer; }
   .ghost.on { border-color: var(--amber); color: var(--amber); }
 
+  .banner { display: none; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding: 14px 18px; border-radius: 14px; background: #4a1d17; color: #ffd9cf; font-size: 15px; }
+  .banner.show { display: flex; }
+  .banner button { height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #ffd9cf; color: #4a1d17; font-weight: 700; cursor: pointer; }
+  .chip.gate-open { background: #1f3a2a; color: #b9f0cf; }
+  .tools { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .takes { display: none; flex-direction: column; gap: 10px; padding: 16px 18px; border-radius: 14px; background: var(--panel); }
   .takes.show { display: flex; }
   .take { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 14px; }
@@ -117,6 +122,7 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
         <span id="mic-name">Mic off</span>
       </span>
+      <span class="chip" id="chip-gate" title="The noise gate keeps room noise out until you play">Gate: —</span>
       <span class="chip" id="chip-latency" title="Delay between your bow and your ears">Delay: —</span>
       <button class="rec-btn" id="rec-btn" type="button" disabled><span class="dot"></span><span id="rec-label">Record jam</span></button>
     </div>
@@ -136,14 +142,22 @@
     </div>
   </section>
 
+  <div class="banner" id="banner" role="alert"><span id="banner-text"></span><button type="button" id="banner-btn">Unmute</button></div>
+
   <section class="pedals" id="pedals" aria-label="Mood pedals"></section>
 
   <section class="takes" id="takes" aria-label="Your recordings"></section>
 
   <footer>
-    <label>Volume <input type="range" id="vol" min="0" max="100" value="70" style="width: 220px"></label>
-    <span>Tap a pedal to switch mood. Drag a knob up or down, or use the arrow keys.</span>
-    <button type="button" class="ghost" id="bypass">Clean (bypass)</button>
+    <div class="tools">
+      <label>Volume <input type="range" id="vol" min="0" max="100" value="60" style="width: 170px"></label>
+      <label title="Higher = blocks more room noise; lower = lets very soft playing through">Noise gate <input type="range" id="gate" min="0" max="100" value="50" style="width: 140px"></label>
+    </div>
+    <div class="tools">
+      <button type="button" class="ghost" id="measure">Measure room</button>
+      <button type="button" class="ghost" id="nsfilter" aria-pressed="false" title="Uses your browser's noise reduction. Helps in noisy rooms; can soften very quiet notes.">Room noise filter: Off</button>
+      <button type="button" class="ghost" id="bypass">Clean (bypass)</button>
+    </div>
   </footer>
 </div>
 
@@ -157,6 +171,7 @@
       <li>Start with the volume low, then raise it.</li>
     </ul>
     <button type="button" class="start-btn" id="start-btn">I'm wearing headphones — start</button>
+    <p id="cal-msg" style="display:none; color: var(--amber); font-weight: 600"></p>
     <div class="err" id="start-err"></div>
   </div>
 </div>
@@ -171,7 +186,7 @@
 const PEDALS = [
   { id: "rock", kind: "DRIVE", name: "ROCK", title: "ROCK STAGE", accent: "#ff6a3d", bg: "#3a1f1a", sub: "#f0c9bf",
     desc: "Heavy drive and a big amp. Your violin becomes a lead guitar.",
-    knobs: [{ key: "gain", label: "Gain", value: 0.7 }, { key: "tone", label: "Tone", value: 0.5 }] },
+    knobs: [{ key: "gain", label: "Gain", value: 0.5 }, { key: "tone", label: "Tone", value: 0.45 }] },
   { id: "blues", kind: "OVERDRIVE", name: "BLUES", title: "BLUES BAR", accent: "#7aa7ff", bg: "#1f2a3a", sub: "#c3d2e6",
     desc: "Warm crunch with a spring reverb. Smoky and soulful.",
     knobs: [{ key: "warmth", label: "Warmth", value: 0.45 }, { key: "spring", label: "Spring", value: 0.45 }] },
@@ -184,7 +199,36 @@ const PEDALS = [
 ];
 const CLEAN = { id: "clean", title: "CLEAN VIOLIN", accent: "#f3eee6", desc: "Your natural sound, with a light touch of room." };
 
-let ctx = null, micStream = null, inputGain, master, inAnalyser, outAnalyser, recDest;
+let ctx = null, micStream = null, micSource = null, inputGain, fxIn, gateNode = null, master, inAnalyser, outAnalyser, fbAnalyser, recDest;
+let noiseFloor = 0.003, gateOpen = false, gateThreshold = 0.01, muted = false, nsOn = false;
+
+// Noise gate (runs in the audio thread): silences the effects until the
+// violin is louder than the room, so drive and reverb don't amplify hiss.
+const GATE_SRC = `
+class ViolinGate extends AudioWorkletProcessor {
+  static get parameterDescriptors() { return [{ name: 'threshold', defaultValue: 0.01, minValue: 0, maxValue: 1 }]; }
+  constructor() { super(); this.env = 0; this.g = 0; this.hold = 0; this.open = false; this.n = 0; }
+  process(inputs, outputs, params) {
+    const inp = inputs[0], out = outputs[0];
+    if (!inp || !inp[0]) return true;
+    const th = params.threshold[0], sr = sampleRate;
+    const atk = Math.exp(-1 / (0.002 * sr)), rel = Math.exp(-1 / (0.06 * sr));
+    const gUp = 1 - Math.exp(-1 / (0.004 * sr)), gDown = 1 - Math.exp(-1 / (0.12 * sr));
+    const holdN = Math.floor(0.09 * sr), ch0 = inp[0];
+    for (let i = 0; i < ch0.length; i++) {
+      const a = Math.abs(ch0[i]);
+      this.env = a > this.env ? atk * this.env + (1 - atk) * a : rel * this.env + (1 - rel) * a;
+      if (this.env > th) { this.open = true; this.hold = holdN; }
+      else if (this.env < th * 0.6) { if (this.hold > 0) this.hold--; else this.open = false; }
+      const target = this.open ? 1 : 0;
+      this.g += (target - this.g) * (target > this.g ? gUp : gDown);
+      for (let c = 0; c < out.length; c++) { const src = inp[c] || ch0; out[c][i] = src[i] * this.g; }
+    }
+    if (++this.n % 8 === 0) this.port.postMessage(this.open);
+    return true;
+  }
+}
+registerProcessor('violin-gate', ViolinGate);`;
 const chains = {};
 let active = "rock";
 
@@ -227,15 +271,18 @@ function ramp(param, v, t = 0.03) { param.setTargetAtTime(v, ctx.currentTime, t)
 // ---------- the four moods + clean ----------
 function buildRock() {
   const inp = gainNode(1), out = gainNode(0);
-  const hp = biquad("highpass", 160, 0.7), pre = gainNode(1), shaper = ctx.createWaveShaper();
+  // Filters before the drive keep scratch and hiss from turning into fizz;
+  // two gentle filters after it act like a guitar speaker cabinet.
+  const hp = biquad("highpass", 180, 0.7), preLp = biquad("lowpass", 4200, 0.7), pre = gainNode(1), shaper = ctx.createWaveShaper();
   shaper.oversample = "4x";
-  const mid = biquad("peaking", 900, 1.0, 5), cabHp = biquad("highpass", 90, 0.7), cabLp = biquad("lowpass", 4500, 0.9);
-  const post = gainNode(0.35), dry = gainNode(1), roomSend = gainNode(0.18), room = ctx.createConvolver();
-  room.buffer = makeImpulse(0.9, 3, 0.35);
-  chain(inp, hp, pre, shaper, mid, cabHp, cabLp, post, dry, out);
+  const mid = biquad("peaking", 900, 1.0, 4), fizz = biquad("peaking", 4300, 1.2, -8), cabHp = biquad("highpass", 90, 0.7);
+  const cabLp = biquad("lowpass", 3800, 0.8), cabLp2 = biquad("lowpass", 5200, 0.6);
+  const post = gainNode(0.35), dry = gainNode(1), roomSend = gainNode(0.15), room = ctx.createConvolver();
+  room.buffer = makeImpulse(0.9, 3, 0.3);
+  chain(inp, hp, preLp, pre, shaper, mid, fizz, cabHp, cabLp, cabLp2, post, dry, out);
   post.connect(roomSend); roomSend.connect(room); room.connect(out);
-  return { inp, out, set: { gain: v => { shaper.curve = hardCurve(4 + v * 46); ramp(pre.gain, 1 + v * 3); ramp(post.gain, 0.42 - v * 0.17); },
-                            tone: v => ramp(cabLp.frequency, 1800 + v * 5200) } };
+  return { inp, out, set: { gain: v => { shaper.curve = hardCurve(3 + v * 30); ramp(pre.gain, 1 + v * 2); ramp(post.gain, 0.42 - v * 0.15); },
+                            tone: v => ramp(cabLp.frequency, 1500 + v * 3500) } };
 }
 function buildBlues() {
   const inp = gainNode(1), out = gainNode(0);
@@ -280,7 +327,7 @@ function buildCinematic() {
     if (active !== "cinematic") { env.gain.setTargetAtTime(0, ctx.currentTime, 0.05); return; }
     an.getFloatTimeDomainData(buf);
     const r = detectPitch(buf, ctx.sampleRate);
-    if (r && r.clarity > 0.75 && r.freq > 180 && r.freq < 2200) {
+    if (gateOpen && r && r.clarity > 0.8 && r.rms > gateThreshold && r.freq > 180 && r.freq < 2200) {
       const t = ctx.currentTime;
       osc.frequency.setTargetAtTime(r.freq / 2, t, 0.015);
       osc2.frequency.setTargetAtTime(r.freq / 2, t, 0.015);
@@ -323,10 +370,10 @@ function setMood(id) {
   if (prev && prev !== next) {
     ramp(prev.out.gain, 0, 0.02);
     const old = prev;
-    setTimeout(() => { if (chains[active] !== old) { try { inputGain.disconnect(old.inp); } catch (e) {} } }, 120);
+    setTimeout(() => { if (chains[active] !== old) { try { fxIn.disconnect(old.inp); } catch (e) {} } }, 120);
   }
   active = id;
-  try { inputGain.connect(next.inp); } catch (e) {}
+  try { fxIn.connect(next.inp); } catch (e) {}
   ramp(next.out.gain, 1, 0.02);
   renderActive();
 }
@@ -402,7 +449,7 @@ async function start() {
   err.style.display = "none";
   try {
     ctx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: "interactive" });
-    micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+    micStream = await openMic(false);
   } catch (e) {
     err.textContent = "The microphone couldn't start. Allow microphone access for this site (the lock icon next to the address), close other apps using the mic, then try again.";
     err.style.display = "block";
@@ -410,26 +457,37 @@ async function start() {
     return;
   }
   await ctx.resume();
-  const src = ctx.createMediaStreamSource(micStream);
-  inputGain = gainNode(1.4);
+  micSource = ctx.createMediaStreamSource(micStream);
+  inputGain = gainNode(1.0);
   inAnalyser = ctx.createAnalyser(); inAnalyser.fftSize = 1024;
-  src.connect(inputGain); inputGain.connect(inAnalyser);
+  micSource.connect(inputGain); inputGain.connect(inAnalyser);
+  try {
+    await ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([GATE_SRC], { type: "application/javascript" })));
+    gateNode = new AudioWorkletNode(ctx, "violin-gate");
+    gateNode.port.onmessage = e => { gateOpen = e.data; };
+    inputGain.connect(gateNode); fxIn = gateNode;
+  } catch (e) {                                  // very old browser: no gate
+    fxIn = inputGain; gateOpen = true;
+  }
   master = gainNode(0);
   const limiter = ctx.createDynamicsCompressor();          // protects ears from sudden peaks
   limiter.threshold.value = -6; limiter.knee.value = 4; limiter.ratio.value = 12; limiter.attack.value = 0.002; limiter.release.value = 0.12;
   outAnalyser = ctx.createAnalyser(); outAnalyser.fftSize = 1024;
   recDest = ctx.createMediaStreamDestination();
-  master.connect(limiter); limiter.connect(outAnalyser); limiter.connect(ctx.destination); limiter.connect(recDest);
+  fbAnalyser = ctx.createAnalyser(); fbAnalyser.fftSize = 4096; fbAnalyser.smoothingTimeConstant = 0.3;
+  master.connect(limiter); limiter.connect(outAnalyser); limiter.connect(fbAnalyser); limiter.connect(ctx.destination); limiter.connect(recDest);
 
   chains.rock = buildRock(); chains.blues = buildBlues(); chains.ambient = buildAmbient();
   chains.cinematic = buildCinematic(); chains.clean = buildClean();
   Object.values(chains).forEach(c => c.out.connect(master));
   PEDALS.forEach(p => p.knobs.forEach(k => chains[p.id].set[k.key](k.value)));
 
-  // start quiet, then fade up to the volume slider (gentle on the ears)
+  setMood(active);
+  master.gain.setValueAtTime(0, ctx.currentTime);
+  // Measure the room for 2 seconds (stay quiet), then fade the sound in.
+  await measureRoom(true);
   master.gain.setValueAtTime(0, ctx.currentTime);
   master.gain.linearRampToValueAtTime(volume(), ctx.currentTime + 1.2);
-  setMood(active);
 
   const track = micStream.getAudioTracks()[0];
   document.getElementById("mic-name").textContent = (track && track.label) ? track.label.replace(/\s*\(.*\)$/, "").slice(0, 28) : "Microphone";
@@ -441,6 +499,89 @@ async function start() {
   requestAnimationFrame(meters);
 }
 
+function openMic(noiseFilter) {
+  return navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: noiseFilter, autoGainControl: false } });
+}
+
+// Listen to the room for 2 s and set the gate just above its noise level.
+async function measureRoom(first) {
+  const msg = document.getElementById("cal-msg");
+  const say = t => { if (first) { msg.style.display = "block"; msg.textContent = t; } else { showBanner(t, false); } };
+  const wasMuted = master.gain.value;
+  if (!first) ramp(master.gain, 0, 0.02);
+  say("Measuring your room… please stay quiet for 2 seconds.");
+  const buf = new Float32Array(inAnalyser.fftSize), samples = [];
+  const t0 = performance.now();
+  await new Promise(res => {
+    const iv = setInterval(() => {
+      samples.push(rmsOf(inAnalyser, buf));
+      if (performance.now() - t0 > 2000) { clearInterval(iv); res(); }
+    }, 50);
+  });
+  samples.sort((a, b) => a - b);
+  noiseFloor = Math.max(0.0008, samples[Math.floor(samples.length * 0.6)] || 0.002);
+  applyGate();
+  if (first) { msg.textContent = ""; msg.style.display = "none"; }
+  else { hideBanner(); if (!muted) ramp(master.gain, volume(), 0.1); }
+}
+
+function applyGate() {
+  const v = document.getElementById("gate").value / 100;
+  gateThreshold = Math.max(0.003, noiseFloor * (1.8 + v * 4.2));
+  if (gateNode) gateNode.parameters.get("threshold").setValueAtTime(gateThreshold, ctx.currentTime);
+}
+
+async function toggleNoiseFilter() {
+  const btn = document.getElementById("nsfilter");
+  try {
+    const s = await openMic(!nsOn);
+    nsOn = !nsOn;
+    micStream.getTracks().forEach(t => t.stop());
+    micSource.disconnect();
+    micStream = s; micSource = ctx.createMediaStreamSource(s); micSource.connect(inputGain);
+    btn.textContent = `Room noise filter: ${nsOn ? "On" : "Off"}`;
+    btn.classList.toggle("on", nsOn); btn.setAttribute("aria-pressed", nsOn ? "true" : "false");
+    await measureRoom(false);
+  } catch (e) { showBanner("Couldn't switch the noise filter. Check microphone access.", false); }
+}
+
+function showBanner(text, withButton) {
+  document.getElementById("banner-text").textContent = text;
+  document.getElementById("banner-btn").style.display = withButton ? "" : "none";
+  document.getElementById("banner").classList.add("show");
+}
+function hideBanner() { document.getElementById("banner").classList.remove("show"); }
+
+// Feedback guard: a loud, steady, pure high tone that doesn't move is the
+// mic hearing the speakers (or headphones). Mute before it gets painful.
+let fbBin = -1, fbSince = 0;
+const fbSpec = new Float32Array(2048);
+function checkFeedback() {
+  if (muted) return;
+  fbAnalyser.getFloatFrequencyData(fbSpec);
+  const binHz = ctx.sampleRate / fbAnalyser.fftSize, lo = Math.floor(1500 / binHz), hi = Math.min(fbSpec.length - 1, Math.floor(8000 / binHz));
+  let pk = lo, pv = -Infinity;
+  for (let k = lo; k <= hi; k++) if (fbSpec[k] > pv) { pv = fbSpec[k]; pk = k; }
+  const sorted = Array.from(fbSpec.subarray(lo, hi)).sort((a, b) => a - b), median = sorted[sorted.length >> 1];
+  const now = performance.now();
+  // A played note has its fundamental (and lower partials) below the peak;
+  // a feedback whistle is a lone tone with nothing underneath it.
+  let hasFundamental = false;
+  for (let n = 2; n <= 8 && !hasFundamental; n++) {
+    const c = Math.round(pk / n);
+    if (c < 3) break;
+    for (let k = c - 2; k <= c + 2; k++) if (fbSpec[k] > pv - 30) { hasFundamental = true; break; }
+  }
+  if (!hasFundamental && pv > -38 && pv - median > 38) {
+    if (fbBin >= 0 && Math.abs(pk - fbBin) <= 1) {
+      if (now - fbSince > 1200) {
+        muted = true; ramp(master.gain, 0, 0.01);
+        showBanner(`Feedback whistle detected (about ${Math.round(pk * binHz)} Hz), so the sound is muted. Use wired headphones, keep them on your ears, lower the volume, then press Unmute.`, true);
+      }
+    } else { fbBin = pk; fbSince = now; }
+  } else { fbBin = -1; }
+}
+
 function volume() { const v = document.getElementById("vol").value / 100; return v * v * 1.6; }
 
 const inBuf = new Float32Array(1024), outBuf = new Float32Array(1024);
@@ -449,7 +590,10 @@ function meters() {
   const ri = rmsOf(inAnalyser, inBuf), ro = rmsOf(outAnalyser, outBuf);
   document.getElementById("in-meter").style.width = Math.min(100, Math.sqrt(ri / 0.25) * 100) + "%";
   document.getElementById("out-meter").style.width = Math.min(100, Math.sqrt(ro / 0.35) * 100) + "%";
-  document.getElementById("in-state").textContent = ri < 0.004 ? "Play something" : ri > 0.3 ? "Too loud" : "Good";
+  document.getElementById("in-state").textContent = ri < gateThreshold * 0.8 ? "Room only — play something" : ri > 0.3 ? "Too loud" : "Good";
+  const gc = document.getElementById("chip-gate");
+  gc.textContent = gateOpen ? "Gate: open" : "Gate: waiting for violin"; gc.classList.toggle("gate-open", gateOpen);
+  checkFeedback();
   const db = ro > 0.0001 ? Math.round(20 * Math.log10(ro)) : null;
   document.getElementById("out-db").textContent = db === null ? "—" : `${db} dB`;
   requestAnimationFrame(meters);
@@ -498,7 +642,11 @@ renderActive();
 document.getElementById("start-btn").addEventListener("click", start);
 document.getElementById("rec-btn").addEventListener("click", toggleRecord);
 document.getElementById("bypass").addEventListener("click", () => setMood(active === "clean" ? "rock" : "clean"));
-document.getElementById("vol").addEventListener("input", () => { if (ctx) ramp(master.gain, volume(), 0.05); });
+document.getElementById("vol").addEventListener("input", () => { if (ctx && !muted) ramp(master.gain, volume(), 0.05); });
+document.getElementById("gate").addEventListener("input", () => { if (ctx) applyGate(); });
+document.getElementById("measure").addEventListener("click", () => { if (ctx) measureRoom(false); });
+document.getElementById("nsfilter").addEventListener("click", () => { if (ctx) toggleNoiseFilter(); });
+document.getElementById("banner-btn").addEventListener("click", () => { muted = false; fbBin = -1; hideBanner(); ramp(master.gain, volume(), 0.3); });
 </script>
 </body>
 </html>
